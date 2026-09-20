@@ -1,0 +1,81 @@
+--- a/src/basic/cgroup-util.c
++++ b/src/basic/cgroup-util.c
+@@ -20,7 +20,7 @@
+ #include "format-util.h"
+ #include "fs-util.h"
+ #include "log.h"
+-// #include "login-util.h"
++#include "login-util.h"
+ #include "macro.h"
+ #include "missing_fs.h"
+ #include "missing_magic.h"
+@@ -1457,9 +1457,14 @@
+         if (!session_id_valid(start))
+                 return -ENXIO;
+ #else // 0
+-        /* Elogind uses a flat hierarchy, just "/SESSION".  The only
+-           wrinkle is that SESSION might be escaped.  */
+-        const char *e, *n, *start;
++        /* Two cgroup layouts have to be understood here:
++
++           1) systemd-logind's, met when elogind is used as a client library on
++              a distribution whose init system is systemd:
++              "/user.slice/user-UID.slice/session-ID.scope"
++           2) elogind's own flat hierarchy, just "/SESSION".  The only
++              wrinkle is that SESSION might be escaped.  */
++        const char *e, *n, *start = NULL, *p;
+ 
+         assert(path);
+         log_debug_elogind("path is \"%s\"", path);
+@@ -1470,16 +1475,43 @@
+ 
+         assert(path[0] == '/');
+ 
+-        e = path + 1;
+-        n = strchrnul(e, '/');
+-        if (e == n)
+-                return -ENXIO;
++        for (p = path; *p; ) {
++                size_t len;
+ 
+-        start = strndupa(e, n - e);
+-        start = cg_unescape(start);
++                p += strspn(p, "/");
++                n = strchrnul(p, '/');
++                len = n - p;
++                if (len == 0)
++                        break;
+ 
+-        if (!start[0])
+-                return -ENXIO;
++                if (len > STRLEN("session-") + STRLEN(".scope") &&
++                    memcmp(p, "session-", STRLEN("session-")) == 0 &&
++                    memcmp(n - STRLEN(".scope"), ".scope", STRLEN(".scope")) == 0) {
++                        const char *candidate;
++
++                        candidate = strndupa(p + STRLEN("session-"),
++                                             len - STRLEN("session-") - STRLEN(".scope"));
++                        if (session_id_valid(candidate)) {
++                                start = candidate;
++                                break;
++                        }
++                }
++
++                p = n;
++        }
++
++        if (!start) {
++                e = path + 1;
++                n = strchrnul(e, '/');
++                if (e == n)
++                        return -ENXIO;
++
++                start = strndupa(e, n - e);
++                start = cg_unescape(start);
++
++                if (!start[0] || !session_id_valid(start))
++                        return -ENXIO;
++        }
+ #endif // 0
+ 
+         log_debug_elogind("found session: \"%s\"", start);
