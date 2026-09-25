@@ -16,14 +16,14 @@ or in `~/.config/guix/channels.scm`:
 DankMaterialShell: the `dms` Go CLI and `dank-material-shell-qml`, the QML part
 installed under `share/dms/quickshell`.
 
-## `(momesana packages polkit)`
+## `(momesana packages host)`
 
-Makes Guix's polkit **agent** stack work when Guix runs on a foreign
-distribution whose init system is systemd. Nothing here is specific to such a
-host: both fixes fall back to the Guix System behaviour at run time, so the
+Makes Guix's authentication stack -- the polkit **agent** and `pam_unix` --
+work when Guix runs on a foreign distribution whose init system is systemd.
+Nothing here is specific to such a host: all fixes fall back to the Guix System behaviour at run time, so the
 same packages are correct on Guix System.
 
-Two assumptions in the upstream packages only hold on Guix System:
+Three assumptions in the upstream packages only hold on Guix System:
 
 1. **Session lookup.** polkit tracks sessions through elogind, whose
    `sd_pid_get_session()` expects elogind's flat `/SESSION` cgroup hierarchy.
@@ -40,7 +40,7 @@ Two assumptions in the upstream packages only hold on Guix System:
    in no session now gets `-ENXIO` instead of `user.slice` -- the same answer
    libsystemd gives, on either kind of host.
 
-2. **The privileged helper.** The agent authenticates by executing a helper
+2. **The polkit helper.** The agent authenticates by executing a helper
    that runs as root. Guix builds polkit to execute
    `/run/setuid-programs/polkit-agent-helper-1`, which only Guix System
    installs; distributions shipping polkit >= 126 ship no setuid helper at all
@@ -55,21 +55,36 @@ Two assumptions in the upstream packages only hold on Guix System:
    bridge needs no setuid bit and no root: the privileged half stays on the
    host side of the socket.
 
+3. **The password helper.** When not running as root, `pam_unix` checks a
+   password by executing a setuid helper, since only root may read
+   `/etc/shadow`. Guix builds it to execute
+   `/run/privileged/bin/unix_chkpwd`, which only Guix System installs, so on
+   a foreign distribution every password is rejected -- by DMS's lock screen,
+   for instance:
+
+       pam_unix(dankshell:auth): authentication failure; ... user=USER
+
+   The `linux-pam` variant keeps that path first and falls back to the host's
+   own helper, `/usr/sbin/unix_chkpwd` or `/sbin/unix_chkpwd` (setgid `shadow`
+   on Debian and Ubuntu). Both come from linux-pam and speak the same
+   argv/stdin protocol, and the host's helper handles whatever hash scheme the
+   host's `/etc/shadow` uses.
+
 ### Exports
 
-- `with-host-polkit` -- rewrites a package to use both variants. They are
+- `with-host-integration` -- rewrites a package to use all three variants. They are
   attached as *replacements* (grafts), so this costs a few dozen reference
   rewrites rather than rebuilding Qt, GTK+ and the rest.
 
-      (use-modules (momesana packages polkit))
-      (with-host-polkit some-package)
+      (use-modules (momesana packages host))
+      (with-host-integration some-package)
 
-- `dank-material-shell-qml-host-polkit` -- the QML package with the above
-  applied, so the quickshell it propagates carries the fixed polkit.
-- `quickshell-host-polkit` -- plain quickshell with the above applied, for a
+- `dank-material-shell-qml-host` -- the QML package with the above applied,
+  so the quickshell it propagates carries the fixed polkit and PAM.
+- `quickshell-host` -- plain quickshell with the above applied, for a
   setup without DankMaterialShell.
 
-The `elogind` and `polkit` variants themselves are private, so the channel does
+The `elogind`, `polkit` and `linux-pam` variants themselves are private, so the channel does
 not shadow the upstream packages of those names.
 
 ### Installing on a systemd host
@@ -79,10 +94,13 @@ store items collide over `bin/quickshell`:
 
     guix package -L ~/repos/guix-channel \
       -r quickshell -r dank-material-shell-qml \
-      -i dank-material-shell-qml-host-polkit
+      -r dank-material-shell-qml-host-polkit \
+      -i dank-material-shell-qml-host
 
-Then restart the shell and check that an agent registers:
+Then restart the shell, check that an agent registers, and lock and unlock
+the screen once:
 
     pkill -f 'dms run'
     niri msg action spawn -- dms run -c ~/.guix-profile/share/dms/quickshell
     pkexec true          # must show DMS's auth dialog
+    dms ipc -c ~/.guix-profile/share/dms/quickshell call lock lock
