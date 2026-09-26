@@ -1,0 +1,27 @@
+--- a/ui/accessible/ui_accessible_widget.cpp	2026-09-26 11:40:19.913326353 +0200
++++ b/ui/accessible/ui_accessible_widget.cpp	2026-09-26 11:40:19.928298858 +0200
+@@ -360,13 +360,16 @@
+ 
+ QList<QAccessible::Attribute> Widget::attributeKeys() const {
+ 	auto result = QList<QAccessible::Attribute>();
++#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+ 	if (rp()->accessibilityOrientation().has_value()) {
+ 		result.append(QAccessible::Attribute::Orientation);
+ 	}
++#endif // Qt >= 6.10.0
+ 	return result;
+ }
+ 
+ QVariant Widget::attributeValue(QAccessible::Attribute key) const {
++#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+ 	if (key == QAccessible::Attribute::Orientation) {
+ 		if (const auto orientation = rp()->accessibilityOrientation()) {
+ 			// Plain int by design: the UIA bridge reads this back with
+@@ -375,6 +378,7 @@
+ 			return int(*orientation);
+ 		}
+ 	}
++#endif // Qt >= 6.10.0
+ 	return QVariant();
+ }
+ 
