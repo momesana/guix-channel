@@ -16,6 +16,20 @@ or in `~/.config/guix/channels.scm`:
 DankMaterialShell: the `dms` Go CLI and `dank-material-shell-qml`, the QML part
 installed under `share/dms/quickshell`.
 
+## `(momesana packages resvg)`
+
+`resvg`, the SVG renderer's command-line tool; yazi uses it for SVG previews.
+Guix ships resvg's crate source, but no package for the tool.
+
+## `(momesana packages rust-crates)`
+
+Crate sources for this channel's Rust packages, looked up with
+`(cargo-inputs 'NAME #:module '(momesana packages rust-crates))`. Guix's
+`(gnu packages rust-crates)` does not export its definitions, so they are
+regenerated here from the package's `Cargo.lock`:
+
+    guix import crate --lockfile=Cargo.lock NAME
+
 ## `(momesana packages host)`
 
 Makes Guix's authentication stack -- the polkit **agent** and `pam_unix` --
