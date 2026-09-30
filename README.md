@@ -21,6 +21,15 @@ installed under `share/dms/quickshell`.
 `resvg`, the SVG renderer's command-line tool; yazi uses it for SVG previews.
 Guix ships resvg's crate source, but no package for the tool.
 
+## `(momesana packages solaar)`
+
+`solaar` with a working wrapper. Guix's package replaces the standard
+`wrap` phase with one that only sets `GI_TYPELIB_PATH`, so `solaar` only
+finds its Python modules when Python itself is in the same profile. This
+variant adds `GUIX_PYTHONPATH` to the wrapper. It has the same name and
+version as Guix's, so refer to the package object rather than a
+specification.
+
 ## `(momesana packages rust-crates)`
 
 Crate sources for this channel's Rust packages, looked up with
