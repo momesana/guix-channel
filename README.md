@@ -16,6 +16,13 @@ or in `~/.config/guix/channels.scm`:
 DankMaterialShell: the `dms` Go CLI and `dank-material-shell-qml`, the QML part
 installed under `share/dms/quickshell`.
 
+## `(momesana packages fluxcd)`
+
+`fluxcd`, the `flux` command-line tool for Flux (Kubernetes GitOps). It
+installs the statically linked release binary, which runs unmodified on
+Guix System; building from source would mean packaging several hundred
+Go modules. Named `fluxcd` because Guix already has an unrelated `flux`.
+
 ## `(momesana packages resvg)`
 
 `resvg`, the SVG renderer's command-line tool; yazi uses it for SVG previews.
