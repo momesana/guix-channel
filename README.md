@@ -23,14 +23,14 @@ Guix ships resvg's crate source, but no package for the tool.
 
 ## `(momesana packages solaar)`
 
-`solaar` with a working wrapper. Guix's package replaces the standard
-`wrap` phase with one that only sets `GI_TYPELIB_PATH`, so `solaar` only
-finds its Python modules when Python itself is in the same profile. This
-variant adds `GUIX_PYTHONPATH` to the wrapper, and libnotify (input and
-`GI_TYPELIB_PATH`) so Solaar can show notifications; the two
-notification test files are skipped because they need a display. It has the same name and
-version as Guix's, so refer to the package object rather than a
-specification.
+`solaar` with a working wrapper. Since PR #9262 (commit 6605d4dc5f) Guix's
+package replaces the standard `wrap` phase with one that only sets
+`GI_TYPELIB_PATH`, so `solaar` only finds its Python modules when Python
+itself is in the same profile. This variant keeps the standard phase and
+sets `GI_TYPELIB_PATH` after it, and adds libnotify so notifications work
+(its two notification test files need a display and are skipped). It has
+the same name and version as Guix's, so refer to the package object rather
+than a specification.
 
 ## `(momesana packages rust-crates)`
 
