@@ -16,6 +16,14 @@ or in `~/.config/guix/channels.scm`:
 DankMaterialShell: the `dms` Go CLI and `dank-material-shell-qml`, the QML part
 installed under `share/dms/quickshell`.
 
+## `(momesana packages brave)`
+
+`brave`, the Brave browser, repackaged from Brave's official `.deb` with
+nonguix's `chromium-binary-build-system`, like nonguix's
+`google-chrome-stable`. The channel therefore depends on nonguix
+(`.guix-channel`). New versions and their SHA-256 are listed in Brave's
+[package index](https://brave-browser-apt-release.s3.brave.com/dists/stable/main/binary-amd64/Packages).
+
 ## `(momesana packages fluxcd)`
 
 `fluxcd`, the `flux` command-line tool for Flux (Kubernetes GitOps). It
