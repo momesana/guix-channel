@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+# Update (momesana packages brave) to Brave's newest stable release.
+#
+#   etc/update-brave            update brave.scm and build the package
+#   etc/update-brave --commit   ... and commit the update (signed)
+#
+# Needs curl, gpg, gpgv and guix; on Guix System e.g.
+#   guix shell curl gnupg -- etc/update-brave
+#
+# Trust chain: Brave's keyring must contain exactly the pinned keys; it
+# verifies the signed release file (InRelease), which pins the hash of the
+# package index, which pins the hash of the .deb.
+set -euo pipefail
+
+repo=https://brave-browser-apt-release.s3.brave.com
+# Brave Linux Release keys (as of 2026-10); a change here needs a human look.
+fingerprints="47D32A74E9A9E013A4B4926C68D513D36A73CD96
+B2A3DCA350E67256740DF904DE4EC67BE4B0DCA0
+DBF1A116C220B8C7164F98230686B78420038257"
+
+channel=$(cd "$(dirname "$(realpath "$0")")/.." && pwd)
+module=$channel/momesana/packages/brave.scm
+commit=no
+[[ ${1:-} == --commit ]] && commit=yes
+
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+cd "$tmp"
+
+curl -fsSo keyring.gpg "$repo/brave-browser-archive-keyring.gpg"
+actual=$(gpg --show-keys --with-colons keyring.gpg 2>/dev/null |
+           awk -F: '$1 == "pub" {want = 1; next}
+                    $1 == "fpr" && want {print $10; want = 0}' | sort)
+if [[ $actual != "$fingerprints" ]]; then
+  echo "update-brave: Brave's keyring changed; expected keys:" >&2
+  echo "$fingerprints" >&2
+  echo "got:" >&2
+  echo "$actual" >&2
+  exit 1
+fi
+
+curl -fsSo InRelease "$repo/dists/stable/InRelease"
+gpgv --quiet --keyring ./keyring.gpg --output Release InRelease
+
+curl -fsSo Packages "$repo/dists/stable/main/binary-amd64/Packages"
+index_sha256=$(awk '/^SHA256:/ {in_sha = 1; next}
+                    /^[^ ]/ {in_sha = 0}
+                    in_sha && $3 == "main/binary-amd64/Packages" {print $1}' Release)
+echo "$index_sha256  Packages" | sha256sum --check --quiet
+
+# The newest version of the stable package, with its file name and SHA-256.
+read -r version filename deb_sha256 < <(
+  awk 'BEGIN {RS = ""; FS = "\n"}
+       {
+         package = version = filename = sha = ""
+         for (i = 1; i <= NF; i++) {
+           if ($i ~ /^Package: /)  package  = substr($i, 10)
+           if ($i ~ /^Version: /)  version  = substr($i, 10)
+           if ($i ~ /^Filename: /) filename = substr($i, 11)
+           if ($i ~ /^SHA256: /)   sha      = substr($i, 9)
+         }
+         if (package == "brave-browser") print version, filename, sha
+       }' Packages | sort -V | tail -1)
+
+current=$(sed -n 's/^    (version "\(.*\)")$/\1/p' "$module")
+if [[ $version == "$current" ]]; then
+  echo "brave is up to date ($current)."
+  exit 0
+fi
+echo "Updating brave: $current -> $version"
+
+download=$(guix download "$repo/$filename" 2>/dev/null)
+store_file=$(sed -n 1p <<<"$download")
+nix_base32=$(sed -n 2p <<<"$download")
+echo "$deb_sha256  $store_file" | sha256sum --check --quiet
+
+sed -i -e "s/^    (version \"$current\")$/    (version \"$version\")/" \
+       -e "s/(base32 \"[0-9a-z]*\")/(base32 \"$nix_base32\")/" "$module"
+
+guix build -L "$channel" brave
+
+if [[ $commit == yes ]]; then
+  git -C "$channel" commit -S -q -m "brave: Update to $version." -- "$module"
+  git -C "$channel" log -1 --format='Committed %h %s'
+else
+  echo "Updated $module; to commit: git commit -S -m 'brave: Update to $version.' $module"
+fi

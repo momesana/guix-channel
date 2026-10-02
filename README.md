@@ -21,8 +21,18 @@ installed under `share/dms/quickshell`.
 `brave`, the Brave browser, repackaged from Brave's official `.deb` with
 nonguix's `chromium-binary-build-system`, like nonguix's
 `google-chrome-stable`. The channel therefore depends on nonguix
-(`.guix-channel`). New versions and their SHA-256 are listed in Brave's
-[package index](https://brave-browser-apt-release.s3.brave.com/dists/stable/main/binary-amd64/Packages).
+(`.guix-channel`).
+
+Brave publishes a stable release about every five days. To update:
+
+    etc/update-brave            # update brave.scm and build it
+    etc/update-brave --commit   # ... and commit the update (signed)
+
+It takes the newest version from Brave's stable apt repository and checks
+the chain from Brave's signing keys (pinned by fingerprint in the script)
+through the signed `InRelease` and the package index to the `.deb`. If
+Brave's keyring changes, it stops: check the new key, then update the
+fingerprints. After committing, `guix pull` and reconfigure as usual.
 
 ## `(momesana packages fluxcd)`
 
