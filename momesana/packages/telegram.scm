@@ -11,7 +11,7 @@
   #:use-module (ice-9 match)
   #:export (telegram-desktop))
 
-(define %telegram-version "7.2.9")
+(define %telegram-version "7.2.10")
 
 (define* (telegram-origin name url commit hash #:key (patches '()))
   (origin
@@ -26,14 +26,14 @@
   `(("cmake"
      ,(telegram-origin
        "cmake-helpers" "https://github.com/desktop-app/cmake_helpers.git"
-       "5e21e7ac353138128145ec4419c0666dc9959347"
-       "1s7vam6cg8fs7cx4p9xqcl4sgxjb19sb8m0sjy6xmn28rxzd5dxf"
+       "a492900cd14ef4fa7789ca399e977c81c27de4fb"
+       "0h9k0n34pmpp76bc4982m9asih75iax8c7fq3jlq0w4wm2h5kgx0"
        #:patches (search-patches "telegram-desktop-unbundle-cppgir.patch")))
     ("Telegram/codegen"
      ,(telegram-origin
        "codegen" "https://github.com/desktop-app/codegen.git"
-       "5146c1703837b39e2d639340dc70db5d674c69f0"
-       "11aw8hjj8s1b2sjj5swzak2p1p1khd8zi29c9dn9rqdr813raamp"))
+       "dbd1d53137cd581cfdbeebe93bcaf54abf55ec74"
+       "0slsdpc28zxdgddd6z1i3028v5pgsrsdwz26idk15950jjwbc3nh"))
     ("Telegram/lib_base"
      ,(telegram-origin
        "lib-base" "https://github.com/desktop-app/lib_base.git"
@@ -83,8 +83,8 @@
     ("Telegram/lib_ui"
      ,(telegram-origin
        "lib-ui" "https://github.com/desktop-app/lib_ui.git"
-       "ae492d4015ce35daf697053776c79786ea7d9282"
-       "125xv4q4cf0y7k11g2vp9k65vx4p98qgdm1hv65qa7831f1kriaw"
+       "97636482c182726119201a6fe0d421d47096a3d6"
+       "1znfh94gqx7mry624idzi04zhflrq7rzynbzz67q1k9b2n1xif17"
        #:patches (list (local-file "lib-ui-qt-6.9-compat.patch"))))
     ("Telegram/lib_webrtc"
      ,(telegram-origin
@@ -94,8 +94,8 @@
     ("Telegram/lib_webview"
      ,(telegram-origin
        "lib-webview" "https://github.com/desktop-app/lib_webview.git"
-       "596fb2432b7c479e9499f8ede64fe6775e65ae91"
-       "0d9skxyqxss0nk9d0d2yzxlf59qq84a5827pxk3svqq5a9rwn99a"))
+       "d2efba0e95c6ac91f779aae12e8c17c76e06567b"
+       "0qm31hqvgmh8gc8hpiyqbcsbs4mnlv923bnhhaz1nf6g5g6vb942"))
     ("Telegram/ThirdParty/cld3"
      ,(telegram-origin
        "cld3" "https://github.com/google/cld3.git"
@@ -200,7 +200,7 @@ parser match rlottie's handling of Telegram stickers.")
              (commit (string-append "v" version))))
        (file-name (git-file-name "telegram-desktop" version))
        (sha256
-        (base32 "0r73dnmps6fq5m0jqrmp5fqzqlpqp76c70znwlbiwgcyhq2p30ns"))))
+        (base32 "1hldblvqa41n8p74cibch6icbw2dcc9zbzwiiwgz1icdy4z2ighm"))))
     (arguments
      (substitute-keyword-arguments
          (package-arguments upstream:telegram-desktop)
