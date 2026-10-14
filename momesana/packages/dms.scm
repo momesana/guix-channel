@@ -16,7 +16,7 @@
   #:use-module (gnu packages window-management)
   #:use-module (momesana packages golang))
 
-(define %dms-version "1.6.2")
+(define %dms-version "1.6.3")
 
 (define %tailscale-stub "\
 package tailscale
@@ -60,7 +60,7 @@ func HandleRequest(conn *models.Conn, req models.Request, manager *Manager) {
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0yqg92yxfwsflsxy393fww2m1rndr5kvlyq80yd8wpm2g3gigxil"))
+        (base32 "1s92klp89za8xzanphvsdavar85xg661nsy6gvqc47xh6yh4wc68"))
        (modules '((guix build utils)))
        ;; The Tailscale integration is the only user of the tailscale.com Go
        ;; module, which is not packaged in Guix.  Replace it with a stub that
@@ -129,7 +129,7 @@ cannot be done from QML.  Tailscale support is not included.")
              (recursive? #t)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0pg0wwi0kw955p9ifx00xs0nlvl5mc1hdy84rgqbal28bd2zyl2k"))))
+        (base32 "06saxva82xjpmprjf0rdd6rvkpskhxx3hw81bfc0w4f6wkz2n62r"))))
     (build-system copy-build-system)
     (arguments
      ;; quickshell/DankCommon is a symlink into the dank-qml-common submodule,
