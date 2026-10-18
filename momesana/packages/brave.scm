@@ -19,7 +19,8 @@
   #:use-module (guix gexp)
   #:use-module (guix packages)
   #:use-module ((guix licenses) #:prefix license:)
-  #:use-module (nonguix build-system chromium-binary))
+  #:use-module (nonguix build-system chromium-binary)
+  #:use-module (nongnu packages video))
 
 ;; Brave's official .deb, repackaged like nonguix's google-chrome-stable
 ;; (nongnu/packages/chrome.scm), whose layout it shares. New versions and
@@ -91,7 +92,15 @@
                                         "/share/brave.com/brave/brave-browser")
                          exe)
                 (wrap-program exe
-                  '("CHROME_WRAPPER" = ("brave-browser")))))))))
+                  '("CHROME_WRAPPER" = ("brave-browser"))
+                  ;; libva finds no driver on a foreign distribution, and
+                  ;; Brave falls back to software video decoding.
+                  (list "LIBVA_DRIVERS_PATH" 'suffix
+                        (list #$(file-append (this-package-input "mesa")
+                                             "/lib/dri")
+                              #$(file-append
+                                 (this-package-input "intel-media-driver")
+                                 "/lib/dri"))))))))))
     (inputs
      (list bzip2
            curl
@@ -100,11 +109,14 @@
            gdk-pixbuf
            gtk
            harfbuzz
+           intel-media-driver
            libexif
-           libglvnd
            libpng
            libva
            libxscrnsaver
+           ;; Not libglvnd: Guix's mesa has its own libEGL, which libglvnd's
+           ;; (without any EGL vendor) would shadow, disabling the GPU.
+           mesa
            opus
            pciutils
            pipewire
