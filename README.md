@@ -2,7 +2,7 @@
 
 Personal Guix channel, module namespace `(momesana ...)`.
 
-    guix build -L ~/repos/guix-channel PACKAGE     # without pulling
+    guix build -L ~/repos/guix/channel PACKAGE     # without pulling
 
 or in `~/.config/guix/channels.scm`:
 
@@ -142,7 +142,7 @@ not shadow the upstream packages of those names.
 Exactly one quickshell may be in the profile, otherwise the two differing
 store items collide over `bin/quickshell`:
 
-    guix package -L ~/repos/guix-channel \
+    guix package -L ~/repos/guix/channel \
       -r quickshell -r dank-material-shell-qml \
       -r dank-material-shell-qml-host-polkit \
       -i dank-material-shell-qml-host
