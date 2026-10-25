@@ -1,0 +1,125 @@
+Make -P (plain connection, no TLS) work, and report why connecting failed.
+
+Since upstream commit d0d9ed5 redir_connect creates a connection context only
+for TLS, so with -P amtterm, amtider and gamt close every connection.  This is
+upstream merge request !3, not yet merged:
+https://gitlab.com/kraxel/amtterm/-/merge_requests/3
+
+From 5b79b25a7933ee4b770b892393f695d31cdaa44d Mon Sep 17 00:00:00 2001
+From: Adam Curtis <adam.curtis.dev@gmail.com>
+Date: Sun, 18 Oct 2026 17:45:27 -0700
+Subject: [PATCH 1/3] redir: set the connect error message before reporting it
+
+Set r->err before redir_connect() switches to REDIR_ERROR.
+
+Fixes blank error messages on failed connection.
+
+Signed-off-by: Adam Curtis <adam.curtis.dev@gmail.com>
+---
+ redir.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/redir.c b/redir.c
+index 70d6100..4b2d24e 100644
+--- a/redir.c
++++ b/redir.c
+@@ -167,9 +167,9 @@ int redir_connect(struct redir *r)
+ 	r->sock = -1;
+     }
+     if (-1 == r->sock) {
+-	redir_state(r, REDIR_ERROR);
+ 	/* FIXME: better error message */
+ 	snprintf(r->err, sizeof(r->err), "connect failed");
++	redir_state(r, REDIR_ERROR);
+ 	return -1;
+     }
+     return 0;
+-- 
+GitLab
+
+
+From 649f0654c598b2e8075a3b9f815fa693f4a171fe Mon Sep 17 00:00:00 2001
+From: Adam Curtis <adam.curtis.dev@gmail.com>
+Date: Sun, 18 Oct 2026 17:45:20 -0700
+Subject: [PATCH 2/3] redir: fix non-SSL connections
+
+Adds sslinitplain for -P (plaintext) connections.
+
+In redir_connect, calls sslinitplain when r->ssl == NULL.
+
+Signed-off-by: Adam Curtis <adam.curtis.dev@gmail.com>
+---
+ redir.c | 2 ++
+ ssl.c   | 5 +++++
+ ssl.h   | 1 +
+ 3 files changed, 8 insertions(+)
+
+diff --git a/redir.c b/redir.c
+index 4b2d24e..5f699ad 100644
+--- a/redir.c
++++ b/redir.c
+@@ -162,6 +162,8 @@ int redir_connect(struct redir *r)
+ 			  strlen(r->port) ? r->port : defport);
+     if (r->ssl)
+ 	r->ctx = sslinit(r->sock, r->cacert);
++    else
++	r->ctx = sslinitplain(r->sock);
+     if(r->ctx == NULL) {
+ 	close(r->sock);
+ 	r->sock = -1;
+diff --git a/ssl.c b/ssl.c
+index 127b563..584bc9c 100644
+--- a/ssl.c
++++ b/ssl.c
+@@ -61,6 +61,11 @@ static struct ctx *newctx(int fd)
+ 	return ctx;
+ }
+ 
++struct ctx *sslinitplain(int fd)
++{
++	return newctx(fd);
++}
++
+ #if defined(USE_OPENSSL)
+ 
+ struct ctx *sslinit(int fd,char *cacert)
+diff --git a/ssl.h b/ssl.h
+index 19c0d58..42bc1ee 100644
+--- a/ssl.h
++++ b/ssl.h
+@@ -1,5 +1,6 @@
+ struct ctx;
+ 
++extern struct ctx *sslinitplain(int fd);
+ extern struct ctx *sslinit(int fd,char *cacert);
+ extern void sslexit(struct ctx *ctx);
+ extern int sslready(struct ctx *ctx);
+-- 
+GitLab
+
+
+From ec2ce0fad989b828c0529b0298d15745987a1092 Mon Sep 17 00:00:00 2001
+From: Adam Curtis <adam.curtis.dev@gmail.com>
+Date: Wed, 21 Oct 2026 03:21:18 -0700
+Subject: [PATCH 3/3] gamt: use SSL when -C is given
+
+Signed-off-by: Adam Curtis <adam.curtis.dev@gmail.com>
+---
+ gamt.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/gamt.c b/gamt.c
+index 30de52b..ffc8d62 100644
+--- a/gamt.c
++++ b/gamt.c
+@@ -772,6 +772,7 @@ static int gamt_connect(struct gamt_window *gamt)
+     gamt->redir.cb_state = state_gtk;
+     gamt->redir.legacy   = amt_legacy;
+     gamt->redir.cacert   = amt_cacert;
++    gamt->redir.ssl      = amt_cacert != NULL;
+ 
+     if (-1 == redir_connect(&gamt->redir))
+ 	return -1;
+-- 
+GitLab
+

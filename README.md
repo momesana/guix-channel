@@ -57,6 +57,25 @@ sets `GI_TYPELIB_PATH` after it, and adds libnotify so notifications work
 the same name and version as Guix's, so refer to the package object rather
 than a specification.
 
+## `(momesana packages amtterm)`
+
+`amtterm`, the Intel AMT serial-over-LAN client, with `amtider` (IDE
+redirection) and `amttool` (SOAP-based power control, which only older AMT
+firmware speaks). Upstream publishes 1.8 only as a git tag, so the source
+comes from GitHub rather than kraxel.org's tarballs. In 1.8, `-P` (no TLS)
+fails right after connecting, with an empty error: since upstream commit
+d0d9ed5 nothing creates the connection context unless TLS is used.
+`amtterm-plain-connection.patch` is upstream merge request !3
+(https://gitlab.com/kraxel/amtterm/-/merge_requests/3), which creates a
+plain one; drop it once that is merged. The GTK frontend `gamt`
+is not built; adding `gtk+` and `vte` to the inputs enables it.
+
+    AMT_PASSWORD=... amtterm HOST            # TLS, port 16995
+    AMT_PASSWORD=... amtterm -P HOST         # plain text, port 16994
+    AMT_PASSWORD=... amtterm -C ca.pem HOST  # TLS, verifying the certificate
+
+Without `-C`, amtterm accepts any certificate.
+
 ## `(momesana packages rust-crates)`
 
 Crate sources for this channel's Rust packages, looked up with
