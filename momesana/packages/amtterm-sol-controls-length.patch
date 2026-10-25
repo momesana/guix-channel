@@ -1,0 +1,22 @@
+Consume only the 10-byte SOL control message, not the whole receive buffer.
+
+When AMT reports a control-line change (e.g. the kernel's 8250 loopback probe)
+and the start of a data message arrives in the same read, discarding the whole
+buffer drops that header; the next read starts mid-text and amtterm aborts with
+"redir_data: unknown r->buf 0x..".
+
+Upstream status: not yet submitted.
+
+diff --git a/redir.c b/redir.c
+index 70d6100..2faed06 100644
+--- a/redir.c
++++ b/redir.c
+@@ -619,7 +619,7 @@ repeat:
+ 	    break;
+ 	case SOL_CONTROLS_FROM_HOST:
+ 	{
+-	    bshift = r->blen; /* FIXME */
++	    bshift = sizeof(struct controls_from_host_message);
+ 	    if (r->blen < bshift)
+ 		goto again;
+ 

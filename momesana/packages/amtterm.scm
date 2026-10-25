@@ -12,8 +12,9 @@
 
 ;; Upstream publishes 1.8 only as a git tag; kraxel.org's tarballs stop at
 ;; 1.7.  The GTK frontend gamt is built only when gtk+ and vte are inputs.
-;; 1.8's -P option (no TLS) closes every connection; the patch, upstream MR
-;; !3, fixes that.
+;; 1.8's -P option (no TLS) closes every connection; the first patch,
+;; upstream MR !3, fixes that.  The second keeps SOL output that arrives in the
+;; same read as a control-line message, which 1.8 drops or aborts on.
 (define-public amtterm
   (package
     (name "amtterm")
@@ -27,7 +28,8 @@
        (file-name (git-file-name name version))
        (sha256
         (base32 "1a39v32mnw9n78ljngfybyr6xq995qfg5wvaa8gd0vi0jim5prs5"))
-       (patches (list (local-file "amtterm-plain-connection.patch")))))
+       (patches (list (local-file "amtterm-plain-connection.patch")
+                      (local-file "amtterm-sol-controls-length.patch")))))
     (build-system meson-build-system)
     (arguments
      (list #:tests? #f                  ;no test suite
