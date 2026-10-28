@@ -17,82 +17,106 @@
 ;; build phase, and tests that need the network, a local time zone or data
 ;; that upstream does not ship are skipped.
 
-(define-public go-github-com-avengemedia-dankgo
+(define-public go-github-com-duxlabs-dev-dux-go
   (package
-    (name "go-github-com-avengemedia-dankgo")
-    (version "1.6.2")
+    (name "go-github-com-duxlabs-dev-dux-go")
+    ;; The commit dux-shell 2.0.0 pins; upstream's v2.0.0 tag is a later one,
+    ;; and the module path has no /v2, so Go knows it by this pseudo-version.
+    (version "1.6.3-0.20261020163124-e2ca52bdf500")
     (source
      (origin
        (method git-fetch)
        (uri (git-reference
-             (url "https://github.com/AvengeMedia/dankgo")
-             (commit (string-append "v" version))))
+             (url "https://github.com/duxlabs-dev/dux-go")
+             (commit (go-version->git-ref version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0319dmrbhbycw46k7x138vxb1730871m9blji700wh1p5garxkz5"))))
+        (base32 "0dml41ywifnn41df0l0403dqbad67848skl662s222lz84mdpry7"))
+       ;; cmd/go-wayland-scanner, upstream's code generator for the Wayland
+       ;; protocol bindings, needs a newer gofumpt; neither DMS nor its
+       ;; libraries use it.
+       (modules '((guix build utils)))
+       (snippet #~(delete-file-recursively "cmd"))))
     (build-system go-build-system)
     (arguments
      (list
-      #:go go-1.26
+      #:go go-1.27
       #:skip-build? #t
-      ;; These need a socket under XDG_RUNTIME_DIR, which the build
-      ;; environment does not provide.
       #:test-flags
-      #~(list "-skip" (string-join (list "TestHandshakeAndPing"
-                                         "TestClientCallCustomHandler"
-                                         "TestSubscribeAndPublish"
-                                         "TestSubscribeHandlerOverride"
-                                         "TestFindRunningSocket")
-                                   "|"))
-      #:import-path "github.com/AvengeMedia/dankgo"))
+      #~(list "-skip"
+              (string-append
+               "^("
+               (string-join
+                (list
+                 ;; These need a socket under XDG_RUNTIME_DIR, which
+                 ;; the build environment does not provide.
+                 "TestHandshakeAndPing"
+                 "TestClientCallCustomHandler"
+                 "TestSubscribeAndPublish"
+                 "TestSubscribeHandlerOverride"
+                 "TestFindRunningSocket"
+                 ;; Their socket path under the build directory is
+                 ;; longer than a Unix socket address allows.
+                 "TestMux"
+                 "TestCallUI"
+                 ;; These run scripts starting with #!/bin/sh, which
+                 ;; the build environment does not have.
+                 "TestExternalThumbnailerProducesCachedThumbnail"
+                 "TestExternalThumbnailerFailureAndTimeoutLeaveMarker"
+                 "TestCommandSource")
+                "|")
+               ")$"))
+      #:import-path "github.com/duxlabs-dev/dux-go"))
     (propagated-inputs (list go-github-com-charmbracelet-lipgloss
                              go-github-com-charmbracelet-log
                              go-github-com-danielgtaylor-huma-v2
+                             go-github-com-fsnotify-fsnotify
                              go-github-com-go-chi-chi-v5
                              go-github-com-godbus-dbus-v5
                              go-github-com-gorilla-schema
-                             go-github-com-iancoleman-strcase
                              go-github-com-mattn-go-isatty
                              go-github-com-muesli-termenv
                              go-github-com-spf13-cobra
                              go-github-com-stretchr-testify
-                             go-golang-org-x-crypto
+                             go-golang-org-x-image
                              go-golang-org-x-sync
                              go-golang-org-x-sys
-                             go-golang-org-x-tools
-                             go-mvdan-cc-gofumpt))
-    (home-page "https://github.com/AvengeMedia/dankgo")
-    (synopsis "dankgo")
+                             go-golang-org-x-text
+                             go-gopkg-in-yaml-v3))
+    (home-page "https://github.com/duxlabs-dev/dux-go")
+    (synopsis "Common Go modules of Dux Shell and its companion tools")
     (description
-     "Common Go modules used by DMS & the Dank Linux suite (dankcalendar, dgop,
-danksearch, and whatever comes next).")
+     "This package provides Go modules shared by Dux Shell (formerly
+DankMaterialShell) and the other Dux tools: logging, paths, IPC, Material
+color generation and more.")
     (license license:expat)))
 
-(define-public go-github-com-avengemedia-dgop
+(define-public go-github-com-duxlabs-dev-dux-gop
   (package
-    (name "go-github-com-avengemedia-dgop")
-    (version "1.6.1-0.20260916132520-8a12dbc6e287")
+    (name "go-github-com-duxlabs-dev-dux-gop")
+    ;; See go-github-com-duxlabs-dev-dux-go for the version.
+    (version "1.6.3-0.20261020163819-0e4888f1fcea")
     (source
      (origin
        (method git-fetch)
        (uri (git-reference
-             (url "https://github.com/AvengeMedia/dgop")
+             (url "https://github.com/duxlabs-dev/dux-gop")
              (commit (go-version->git-ref version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0m6y7vxyhli8hcj427vjjjiwq4lx56q016i69707jk64p4sw3s1r"))))
+        (base32 "0akcffva4s0c914rjn5ic1qzrdcqrxb08lb731glxscvhivv3zc1"))))
     (build-system go-build-system)
     (arguments
      (list
-      #:go go-1.26
+      #:go go-1.27
       #:skip-build? #t
-      #:import-path "github.com/AvengeMedia/dgop"))
-    (propagated-inputs (list go-github-com-avengemedia-dankgo
-                             go-github-com-caarlos0-env
+      #:import-path "github.com/duxlabs-dev/dux-gop"))
+    (propagated-inputs (list go-github-com-caarlos0-env-v11
                              go-github-com-charmbracelet-bubbles
                              go-github-com-charmbracelet-bubbletea
                              go-github-com-charmbracelet-lipgloss
                              go-github-com-danielgtaylor-huma-v2
+                             go-github-com-duxlabs-dev-dux-go
                              go-github-com-fsnotify-fsnotify
                              go-github-com-go-chi-chi-v5
                              go-github-com-shirou-gopsutil-v4
@@ -100,41 +124,17 @@ danksearch, and whatever comes next).")
                              go-github-com-stretchr-testify
                              go-golang-org-x-sync
                              go-golang-org-x-sys))
-    (home-page "https://github.com/AvengeMedia/dgop")
-    (synopsis "dgop")
+    (home-page "https://github.com/duxlabs-dev/dux-gop")
+    (synopsis "System monitoring library and tool")
     (description
-     "System monitoring tool with CLI and REST API built in Go.  Fast, single binary,
-JSON output, @code{OpenAPI} spec.")
+     "dux-gop (formerly dgop) is a system monitoring tool with a CLI and a
+REST API, built in Go.  Dux Shell uses it as a library.")
     (license license:expat)))
-
-(define-public go-github-com-nadim147c-material-v3
-  (package
-    (name "go-github-com-nadim147c-material-v3")
-    (version "3.1.1")
-    (source
-     (origin
-       (method git-fetch)
-       (uri (git-reference
-             (url "https://github.com/Nadim147c/material")
-             (commit (string-append "v" version))))
-       (file-name (git-file-name name version))
-       (sha256
-        (base32 "1g7czr154pcbnzhchkqqclq70s5ym09lm691r8kbri9z5dv544pn"))))
-    (build-system go-build-system)
-    (arguments
-     (list
-      #:import-path "github.com/Nadim147c/material/v3"))
-    (home-page "https://github.com/Nadim147c/material")
-    (synopsis "Material")
-    (description
-     "This package provides a pure go implementation of without any external
-dependencies.")
-    (license license:asl2.0)))
 
 (define-public go-github-com-dlclark-regexp2-v2
   (package
     (name "go-github-com-dlclark-regexp2-v2")
-    (version "2.5.1")
+    (version "2.9.1")
     (source
      (origin
        (method git-fetch)
@@ -143,7 +143,7 @@ dependencies.")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1xld5hb2v2ih8sjjz8n0x38fv0d4xdwykhfl94yfdjc7f6ym7vik"))))
+        (base32 "0p6mm2nzq09m5lqknlkdadx2c942h8a20jgg8630ry5ad6vmvljr"))))
     (build-system go-build-system)
     (arguments
      (list
@@ -245,6 +245,59 @@ scenes.")
 @@code{io.Writer}, normally a file.")
     (license license:expat)))
 
+(define-public go-github-com-srwiley-rasterx
+  (package
+    (name "go-github-com-srwiley-rasterx")
+    (version "0.0.0-20220730225603-2ab79fcdd4ef")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/srwiley/rasterx")
+             (commit (go-version->git-ref version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "1bwb986i3l35yghss002xbbbn4mqg8w9dbvib55s2zvyy89r4ygx"))))
+    (build-system go-build-system)
+    (arguments
+     (list
+      #:import-path "github.com/srwiley/rasterx"))
+    (propagated-inputs (list go-golang-org-x-image))
+    (home-page "https://github.com/srwiley/rasterx")
+    (synopsis "Vector rasterizer in Go")
+    (description
+     "Package rasterx implements a rasterizer in Go.  By default it renders
+images with @code{ScannerGV}, which uses the rasterizer of the
+@code{golang.org/x/image/vector} package.")
+    (license license:bsd-3)))
+
+(define-public go-github-com-srwiley-oksvg
+  (package
+    (name "go-github-com-srwiley-oksvg")
+    (version "0.0.0-20221011165216-be6e8873101c")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/srwiley/oksvg")
+             (commit (go-version->git-ref version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "0add9sgvgnjlr5admgwj6hq3cwki2c2gjllwyrqkmb74q5izm5lm"))))
+    (build-system go-build-system)
+    (arguments
+     (list
+      #:import-path "github.com/srwiley/oksvg"))
+    (propagated-inputs (list go-github-com-srwiley-rasterx
+                             go-golang-org-x-image
+                             go-golang-org-x-net))
+    (home-page "https://github.com/srwiley/oksvg")
+    (synopsis "SVG rasterizer in Go")
+    (description
+     "oksvg is a rasterizer for a partial implementation of the SVG 2.0
+specification in Go.")
+    (license license:bsd-3)))
+
 (define-public go-github-com-sblinch-kdl-go
   (package
     (name "go-github-com-sblinch-kdl-go")
@@ -314,3 +367,19 @@ decoding KDL documents, marshaling and unmarshaling them into Go structs.")
      "Package chroma takes source code and other structured text and converts it into
 syntax highlighted HTML, ANSI- coloured text, etc.")
     (license license:expat)))
+
+;; Guix has go-udev 0.9.1; DMS uses UEventConn's ReceiveBufferSize and
+;; MonitorWithContext, which came with this release.
+(define-public go-github-com-pilebones-go-udev-0.10
+  (package
+    (inherit go-github-com-pilebones-go-udev)
+    (version "0.10.0")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/pilebones/go-udev")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name "go-github-com-pilebones-go-udev" version))
+       (sha256
+        (base32 "1b1fn4dbcic6pvriwfriibr7vnkcwnwsw6s2cig30lq2yfi5f85a"))))))

@@ -119,7 +119,7 @@
 (define-public quickshell-host
   ;; Note: dank-material-shell-qml propagates quickshell, so installing this
   ;; one next to it makes both land in the profile and collide over
-  ;; bin/quickshell.  With DankMaterialShell, use
+  ;; bin/quickshell.  With Dux Shell (DankMaterialShell), use
   ;; dank-material-shell-qml-host below instead.
   (package
     (inherit (with-host-integration upstream:quickshell))

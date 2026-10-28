@@ -13,8 +13,9 @@ or in `~/.config/guix/channels.scm`:
 
 ## `(momesana packages dms)`
 
-DankMaterialShell: the `dms` Go CLI and `dank-material-shell-qml`, the QML part
-installed under `share/dms/quickshell`.
+Dux Shell (formerly DankMaterialShell): the `dms` Go CLI and
+`dank-material-shell-qml`, the QML part installed under
+`share/dms/quickshell`.
 
 ## `(momesana packages brave)`
 
