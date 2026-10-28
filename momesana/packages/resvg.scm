@@ -7,14 +7,14 @@
 (define-public resvg
   (package
     (name "resvg")
-    (version "0.48.1")
+    (version "0.49.0")
     (source
      (origin
        (method url-fetch)
        (uri (crate-uri "resvg" version))
        (file-name (string-append name "-" version ".tar.gz"))
        (sha256
-        (base32 "1gcn2590qwl3hzs3qqz1j96j00l1gb8csvkwpw6fi6drjwzq1qv7"))))
+        (base32 "1s5ychjplh6i9gxhmxc3xm5w92m685v99sch462bz897cx5q8whm"))))
     (build-system cargo-build-system)
     (arguments
      (list #:install-source? #f))

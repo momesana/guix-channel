@@ -242,9 +242,9 @@
   (crate-source "unicode-vo" "0.1.0"
                 "151sha088v9jyfvbg5164xh4dk72g53b82xm4zzbf5dlagzqdlxi"))
 
-(define rust-usvg-0.48.1
-  (crate-source "usvg" "0.48.1"
-                "149y95i3g0dwlcbg1ipb1awqkq3napwhkzlr9913z4zgpm50lzcp"))
+(define rust-usvg-0.49.0
+  (crate-source "usvg" "0.49.0"
+                "0b7jzk3sazi7zyv7axj3iq9fn5kv6h7h1ngzsw53j7b4hgp776yh"))
 
 (define rust-version-check-0.9.5
   (crate-source "version_check" "0.9.5"
@@ -328,7 +328,7 @@
                rust-unicode-ident-1.0.24
                rust-unicode-script-0.5.8
                rust-unicode-vo-0.1.0
-               rust-usvg-0.48.1
+               rust-usvg-0.49.0
                rust-version-check-0.9.5
                rust-weezl-0.1.12
                rust-xmlwriter-0.1.0
