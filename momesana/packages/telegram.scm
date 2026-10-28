@@ -5,13 +5,15 @@
   #:use-module (guix utils)
   #:use-module (guix build-system cargo)
   #:use-module ((guix licenses) #:prefix license:)
+  #:use-module (guix download)
   #:use-module (gnu packages)
+  #:use-module (gnu packages rust)
   #:use-module (gnu packages security-token)
   #:use-module ((gnu packages telegram) #:prefix upstream:)
   #:use-module (ice-9 match)
   #:export (telegram-desktop))
 
-(define %telegram-version "7.2.10")
+(define %telegram-version "7.3.3")
 
 (define* (telegram-origin name url commit hash #:key (patches '()))
   (origin
@@ -22,12 +24,23 @@
     (patches patches)
     (sha256 (base32 hash))))
 
+(define tlottie-source
+  (let ((commit "92df98dc209bc39b1e567ec74a8c86a0af5239de"))
+    (origin
+      (method git-fetch)
+      (uri (git-reference
+            (url "https://github.com/dkaraush/tlottie")
+            (commit commit)))
+      (file-name (git-file-name "tlottie" (git-version "1.0.6" "0" commit)))
+      (sha256
+       (base32 "1s3i9qzgs79scs4dyrqj2m4clf9xp9yz3yldc7nyhby0zv4k5mjs")))))
+
 (define %telegram-submodules
   `(("cmake"
      ,(telegram-origin
        "cmake-helpers" "https://github.com/desktop-app/cmake_helpers.git"
-       "a492900cd14ef4fa7789ca399e977c81c27de4fb"
-       "0h9k0n34pmpp76bc4982m9asih75iax8c7fq3jlq0w4wm2h5kgx0"
+       "7ceca3019b4750d7a5acb2de0faffd523ee14095"
+       "127k1h3j9279i8a9jyp5alr9kr0pswjfhr0j5kaxvbwk2c0wlfyw"
        #:patches (search-patches "telegram-desktop-unbundle-cppgir.patch")))
     ("Telegram/codegen"
      ,(telegram-origin
@@ -37,18 +50,18 @@
     ("Telegram/lib_base"
      ,(telegram-origin
        "lib-base" "https://github.com/desktop-app/lib_base.git"
-       "de35c7abcbf6464a0845695a55568bdac12a5fba"
-       "0k2ca3im88h8b096rfnrqvp6irsr2556m1v6cfvx5nv139r496vi"))
+       "95a543e426e35938dd632139d0bb828b268c3b4c"
+       "12d4vf3imr6v0a1n8c2gj5kdl812k5x984dbddqz93nw9hc8kl26"))
     ("Telegram/lib_crl"
      ,(telegram-origin
        "lib-crl" "https://github.com/desktop-app/lib_crl.git"
-       "7a165302fed408c84b2d1c2513e35a21a141da44"
-       "1lxain8npmsjc4milid8862j19pn1rzvic2aj09aq4xdf5i7yhjn"))
+       "de724667d7bdfbf906f78fc405af1ee9f7723d49"
+       "089pn2sgcm6s8l1mx6hdn84v9mwdl66r469j0rg08pggv1jr56lr"))
     ("Telegram/lib_lottie"
      ,(telegram-origin
        "lib-lottie" "https://github.com/desktop-app/lib_lottie.git"
-       "7d00b5048aff8dd93c0a9721abf50006d20682be"
-       "1998203f73n1sy0g9zij2qcspj9c784apgwnm9xfg6kwb744drjy"))
+       "fbb922c30b7c30ba17ad5fd4fcb989eadd620062"
+       "0cx98kv22iqplb8b8xhwq1lna4hjqjgizcp8s02zl0ap5wrv577c"))
     ("Telegram/lib_qr"
      ,(telegram-origin
        "lib-qr" "https://github.com/desktop-app/lib_qr.git"
@@ -78,13 +91,13 @@
     ("Telegram/lib_translate"
      ,(telegram-origin
        "lib-translate" "https://github.com/desktop-app/lib_translate"
-       "09c10726220e6862ca91d39b5dec5119aa0177bc"
-       "05z9bz2gcc952afr19q9z00hnrdx1j3ww7bddazpb2f4b86xi5yc"))
+       "b23983df9dd87b6993afdcefb48daf890beb545e"
+       "13wwq88wiwb27alisfi55aiifq0s7fbq9mnpj81hby24njfh313v"))
     ("Telegram/lib_ui"
      ,(telegram-origin
        "lib-ui" "https://github.com/desktop-app/lib_ui.git"
-       "97636482c182726119201a6fe0d421d47096a3d6"
-       "1znfh94gqx7mry624idzi04zhflrq7rzynbzz67q1k9b2n1xif17"
+       "2f29133506e174a9d4a7b78740c3f1b04c2b993c"
+       "0h33qdz2m11z3gmm0nafyca7b5vms4rnprbjkrv73bf3hh66q3vi"
        #:patches (list (local-file "lib-ui-qt-6.9-compat.patch"))))
     ("Telegram/lib_webrtc"
      ,(telegram-origin
@@ -94,8 +107,8 @@
     ("Telegram/lib_webview"
      ,(telegram-origin
        "lib-webview" "https://github.com/desktop-app/lib_webview.git"
-       "d2efba0e95c6ac91f779aae12e8c17c76e06567b"
-       "0qm31hqvgmh8gc8hpiyqbcsbs4mnlv923bnhhaz1nf6g5g6vb942"))
+       "ef03bbfd696c7527d7cb57ac20c3a5d30feb98fa"
+       "1n3lacw0jvn1i0dkciagqicma5whpr38k2q20f011bz11bylj56j"))
     ("Telegram/ThirdParty/cld3"
      ,(telegram-origin
        "cld3" "https://github.com/google/cld3.git"
@@ -109,8 +122,8 @@
     ("Telegram/ThirdParty/libprisma"
      ,(telegram-origin
        "libprisma" "https://github.com/desktop-app/libprisma"
-       "23b0d70f9709da9b38561d5706891a134d18df76"
-       "0fg4x4ikj7f3706bmfvkwq4smxc98qr3cgpm25w48n4ys6wfgadg"))
+       "75f26c17308871bee69f69a2831a8af2bc2f3627"
+       "1bbnvrc2yvq8g4km0bdy6q6bysqp2y7hlp41m67flijkhgvwx4p2"))
     ("Telegram/ThirdParty/MicroTeX"
      ,(telegram-origin
        "microtex" "https://github.com/desktop-app/MicroTeX.git"
@@ -119,74 +132,136 @@
     ("Telegram/ThirdParty/tgcalls"
      ,(telegram-origin
        "tgcalls" "https://github.com/TelegramMessenger/tgcalls.git"
-       "2faee3b5524f54d56c91c2058c00e11c656a74b3"
-       "0azwkwj1l91qrv41nn2ik3h1q4j849dki43xwzmqdfdwjbqgcv7v"))
+       "1c236c09f8d8569fead14bd68000618a52051225"
+       "194r0qnpwlqkm31iw61lpcfji2cmc2kfqjjakzzi3habjzzaagg8"))
     ("Telegram/ThirdParty/TooManyCooks"
      ,(telegram-origin
        "toomanycooks" "https://github.com/tzcnt/TooManyCooks.git"
        "b86af81982860c96295a7e95e4c60cb335615cef"
-       "1lpmddx0plhl2g3h86lbv184iaf38gsyjkd1bczv7q9xq4fclppr"))))
+       "1lpmddx0plhl2g3h86lbv184iaf38gsyjkd1bczv7q9xq4fclppr"))
+    ("Telegram/ThirdParty/zxcvbn"
+     ,(telegram-origin
+       "zxcvbn" "https://github.com/tsyrogit/zxcvbn-c.git"
+       "ab51000506afc1a450557a3608646bc04ba951fa"
+       "035jgrjvn6lhcii7yxh2a6wyz9y8il81pwz3i7zp10jz6dqv2nvd"))))
 
-(define tlottie
-  (let ((commit "31f1b542f88e7b4be9a01e749920d857535fc715")
-        (revision "0"))
-    (package
-      (name "tlottie")
-      (version (git-version "0.1.0" revision commit))
-      (source
-       (origin
-         (method git-fetch)
-         (uri (git-reference
-               (url "https://github.com/dkaraush/tlottie.git")
-               (commit commit)))
-         (file-name (git-file-name name version))
-         (patches (list (local-file "tlottie-rlottie-compat.patch")))
-         (sha256
-          (base32 "0v3vj6ifgssipcackpajy7p80mscp1c7pa86hcnphkfqaz8l3i16"))))
-      (build-system cargo-build-system)
-      (arguments
-       (list
-        #:install-source? #f
-        #:phases
-        #~(modify-phases %standard-phases
-            (add-after 'unpack 'drop-no-std-dependencies
-              (lambda _
-                (substitute* "Cargo.toml"
-                  (("^no-std = .*") "")
-                  (("^hashbrown = .*") "")
-                  (("^dlmalloc = .*") ""))))
-            ;; CPUID intrinsics became safe in Rust 1.94.
-            (add-after 'unpack 'support-older-rust
-              (lambda _
-                (substitute* "src/renderer/cpu/simd/cpuid.rs"
-                  (("(__cpuid(_count)?\\([0-9, ]+\\))" call)
-                   (string-append "unsafe { " call " }")))))
-            (replace 'build
-              (lambda _
-                (invoke "cargo" "rustc" "--lib" "--release" "--offline"
-                        "--features" "c-api" "--crate-type" "staticlib")))
-            (replace 'check
-              (lambda* (#:key tests? #:allow-other-keys)
-                (when tests?
-                  (invoke "cargo" "test" "--lib" "--release" "--offline" "--"
-                          ;; Fails with LimitExceeded(ParseMemory) at this
-                          ;; commit even without Telegram's patch.
-                          "--skip"
-                          "dos::renderer_rejects_generated_work_after_successful_parse"))))
-            (delete 'package)
-            (replace 'install
-              (lambda _
-                (install-file "target/release/libtlottie.a"
+(define wallet-engine-source
+  (let ((commit "e59e0d89d7ee90c388bf36e3334c5b276f396697"))
+    (origin
+      (method git-fetch)
+      (uri (git-reference
+            (url "https://github.com/i582/wallet-engine")
+            (commit commit)))
+      (file-name (git-file-name "wallet-engine" (git-version "0.0.7" "0" commit)))
+      (sha256
+       (base32 "07l7qssdfgvrqaym1ivyl4mykn19qw9z1r655yfl14d3h3nmcvzg")))))
+
+(define uniffi-bindgen-cpp
+  (package
+    (name "uniffi-bindgen-cpp")
+    (version "0.9.0")
+    (source wallet-engine-source)
+    (build-system cargo-build-system)
+    (arguments
+     (list
+      #:install-source? #f
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'chdir
+            (lambda _
+              (chdir "bindgen/cpp")))
+          (replace 'install
+            (lambda _
+              (invoke "cargo" "install" "--offline" "--no-track"
+                      "--path" "bindgen" "--root" #$output))))))
+    (inputs (cargo-inputs 'uniffi-bindgen-cpp
+                          #:module '(momesana packages rust-crates)))
+    (home-page "https://github.com/NordSecurity/uniffi-bindgen-cpp")
+    (synopsis "C++ bindings generator for UniFFI")
+    (description
+     "uniffi-bindgen-cpp generates C++ bindings for Rust libraries that use
+UniFFI.  This copy is the one vendored by wallet-engine.")
+    (license license:mpl2.0)))
+
+;; The Rust libraries of Telegram Desktop, built like upstream's Linux build
+;; does: one crate re-exporting tlottie and wallet-engine, so that a single
+;; copy of the Rust standard library ends up in the binary.
+(define tdesktop-rust
+  (package
+    (name "tdesktop-rust")
+    (version %telegram-version)
+    (source
+     (origin
+       (inherit wallet-engine-source)
+       (patches
+        (list (origin
+                (method url-fetch)
+                (uri (string-append
+                      "https://raw.githubusercontent.com/desktop-app/patches/"
+                      "a895fef40eaa7d66481cff542c623b039b7ce494"
+                      "/wallet-engine.patch"))
+                (file-name "wallet-engine-for-telegram-desktop.patch")
+                (sha256
+                 (base32
+                  "08mqndv1aam407k00rid39xsbfhksr0gmv45d99d0hlsqf1bl2ml")))))))
+    (build-system cargo-build-system)
+    (arguments
+     (list
+      #:rust rust-1.96
+      #:install-source? #f
+      #:tests? #f                     ; The umbrella crate has no tests
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'create-umbrella-crate
+            (lambda _
+              (let ((source (getcwd)))
+                (chdir "..")
+                (rename-file source "wallet-engine")
+                (copy-recursively #$tlottie-source "tlottie")
+                (mkdir-p "tdesktop_rust/src")
+                (chdir "tdesktop_rust")
+                (call-with-output-file "Cargo.toml"
+                  (lambda (port)
+                    (display "[package]
+name = \"tdesktop_rust\"
+version = \"0.1.0\"
+edition = \"2024\"
+
+[dependencies]
+tlottie = { path = \"../tlottie\", features = [\"c-api\"] }
+wallet-engine = { path = \"../wallet-engine\" }
+" port)))
+                (call-with-output-file "src/lib.rs"
+                  (lambda (port)
+                    (display "pub use ::tlottie;\npub use ::wallet_engine;\n"
+                             port))))))
+          (replace 'build
+            (lambda _
+              ;; wallet-engine asks for Rust 1.96.1.
+              (invoke "cargo" "rustc" "--offline" "--lib" "--release"
+                      "--ignore-rust-version"
+                      "--crate-type" "staticlib" "--crate-type" "cdylib")))
+          (delete 'package)
+          (replace 'install
+            (lambda _
+              (let ((include (string-append #$output "/include")))
+                (install-file "target/release/libtdesktop_rust.a"
                               (string-append #$output "/lib"))
-                (install-file "include/tlottie.h"
-                              (string-append #$output "/include/tlottie")))))))
-      (home-page "https://github.com/dkaraush/tlottie")
-      (synopsis "Lottie animation renderer used by Telegram Desktop")
-      (description
-       "tlottie is a Rust Lottie renderer with a C API, used by Telegram
-Desktop in place of rlottie.  This package carries Telegram's patch making its
-parser match rlottie's handling of Telegram stickers.")
-      (license license:expat))))
+                (install-file "../tlottie/include/tlottie.h"
+                              (string-append include "/tlottie"))
+                (invoke "uniffi-bindgen-cpp" "--library"
+                        "--out-dir" (string-append include "/wallet_engine")
+                        "target/release/libtdesktop_rust.so")))))))
+    (native-inputs (list uniffi-bindgen-cpp))
+    (inputs (cargo-inputs 'tdesktop-rust
+                          #:module '(momesana packages rust-crates)))
+    (home-page "https://github.com/telegramdesktop/tdesktop")
+    (synopsis "Rust libraries of Telegram Desktop")
+    (description
+     "This package combines tlottie, a Lottie renderer, and wallet-engine,
+the TON wallet core, into the single static library Telegram Desktop links,
+along with their C and C++ interfaces.")
+    (license (list license:expat license:asl2.0))))
 
 (define telegram-desktop
   (package
@@ -200,16 +275,13 @@ parser match rlottie's handling of Telegram stickers.")
              (commit (string-append "v" version))))
        (file-name (git-file-name "telegram-desktop" version))
        (sha256
-        (base32 "1hldblvqa41n8p74cibch6icbw2dcc9zbzwiiwgz1icdy4z2ighm"))))
+        (base32 "0k9fwvc4bd92a88bd8ica3lvkdf3x1g52q0vhdz3jfkymckxq0qi"))))
     (arguments
      (substitute-keyword-arguments
          (package-arguments upstream:telegram-desktop)
-       ((#:make-flags _ #~'()) #~'("-k"))
-       ((#:configure-flags flags)
-        #~(delete "-DDESKTOP_APP_USE_PACKAGED_RLOTTIE=ON" #$flags))
-       ((#:phases _)
-        #~(modify-phases %standard-phases
-            (add-after 'unpack 'unpack-additional-sources
+       ((#:phases phases)
+        #~(modify-phases #$phases
+            (replace 'unpack-additional-sources
               (lambda _
                 (for-each make-file-writable (find-files "."))
                 (for-each
@@ -219,31 +291,8 @@ parser match rlottie's handling of Telegram stickers.")
                     (for-each make-file-writable (find-files dst))))
                  '#$(map (match-lambda
                            ((dst src) #~(#$dst #$src)))
-                         %telegram-submodules))))
-            (add-after 'unpack-additional-sources 'patch-gir-ignore-paths
-              (lambda _
-                (substitute* "cmake/external/glib/generate_cppgir.cmake"
-                  (("\\$\\{cmake_helpers_loc\\}/external/glib/cppgir/data")
-                   (string-append #$(this-package-input "cppgir")
-                                  "/share/cppgir")))))
-            (add-after 'unpack-additional-sources 'use-system-xdg-desktop-portal
-              (lambda _
-                (substitute* (list "Telegram/CMakeLists.txt"
-                                   "Telegram/lib_base/CMakeLists.txt")
-                  (("\\$\\{third_party_loc\\}/xdg-desktop-portal/data")
-                   (string-append
-                    #$(this-package-native-input "xdg-desktop-portal")
-                    "/share/dbus-1/interfaces")))))
-            (add-after 'use-system-xdg-desktop-portal 'patch-libwebview
-              (lambda _
-                (substitute* "Telegram/lib_webview/webview/webview_interface.h"
-                  (("constexpr ") ""))))
-            (add-after 'install 'glib-or-gtk-compile-schemas
-              (assoc-ref glib-or-gtk:%standard-phases
-                         'glib-or-gtk-compile-schemas))
-            (add-after 'glib-or-gtk-compile-schemas 'glib-or-gtk-wrap
-              (assoc-ref glib-or-gtk:%standard-phases 'glib-or-gtk-wrap))))))
+                         %telegram-submodules))))))))
     (inputs
      (modify-inputs (package-inputs upstream:telegram-desktop)
        (delete "rlottie-for-telegram-desktop")
-       (append libfido2 tlottie)))))
+       (append libfido2 tdesktop-rust)))))
