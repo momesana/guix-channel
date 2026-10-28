@@ -30,7 +30,7 @@
 (define-public brave
   (package
     (name "brave")
-    (version "1.97.56")
+    (version "1.98.62")
     (source
      (origin
        (method url-fetch)
@@ -38,7 +38,7 @@
                            "pool/main/b/brave-browser/brave-browser_"
                            version "_amd64.deb"))
        (sha256
-        (base32 "0sdnjf4xzsh2vdmhr1i2gr8m0qkxl4873ayszkk6f19qvf4wpr1h"))))
+        (base32 "1hamnm9r38m3wanrcagqk075k6n2idhrhqbn5mb2pnr6fxv6qazv"))))
     (build-system chromium-binary-build-system)
     (arguments
      (list
