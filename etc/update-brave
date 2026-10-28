@@ -40,7 +40,7 @@ if [[ $actual != "$fingerprints" ]]; then
 fi
 
 curl -fsSo InRelease "$repo/dists/stable/InRelease"
-gpgv --quiet --keyring ./keyring.gpg --output Release InRelease
+gpgv --quiet --keyring ./keyring.gpg --output - InRelease >Release
 
 curl -fsSo Packages "$repo/dists/stable/main/binary-amd64/Packages"
 index_sha256=$(awk '/^SHA256:/ {in_sha = 1; next}
