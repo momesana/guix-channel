@@ -8,7 +8,12 @@ or in `~/.config/guix/channels.scm`:
 
     (cons (channel
             (name 'momesana)
-            (url "ssh://git@git.momesana.io/momesana/guix-channel.git"))
+            (url "ssh://git@git.momesana.io/momesana/guix-channel.git")
+            (introduction
+             (make-channel-introduction
+              "9d1d8934f8f478081f3740175e474042f17d658f"
+              (openpgp-fingerprint
+               "1338 3E41 986B 07C8 402A  62D2 9FE9 38BB FAA0 4E94"))))
           %default-channels)
 
 ## `(momesana packages dms)`
