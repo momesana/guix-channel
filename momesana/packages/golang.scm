@@ -37,7 +37,25 @@
        ;; protocol bindings, needs a newer gofumpt; neither DMS nor its
        ;; libraries use it.
        (modules '((guix build utils)))
-       (snippet #~(delete-file-recursively "cmd"))))
+       (snippet
+        #~(begin
+            (delete-file-recursively "cmd")
+            ;; The bubblewrap sandbox for external thumbnailers binds /usr
+            ;; and /nix but not the store, so tools from Guix fail in it.
+            ;; Guix System need not have /usr at all.
+            (substitute* "files/thumbsandbox.go"
+              (("\"/nix\", ")
+               "\"/nix\", \"/gnu/store\", ")
+              (("\"--ro-bind\", \"/usr\"")
+               "\"--ro-bind-try\", \"/usr\""))
+            ;; Tools found on PATH are profile symlinks under $HOME, which
+            ;; the sandbox does not bind; run their store file instead.
+            (substitute* "files/thumbnailers.go"
+              (("^\t\treturn path\n")
+               "\t\tif real, err := filepath.EvalSymlinks(path); err == nil {
+\t\t\treturn real
+\t\t}
+\t\treturn path\n"))))))
     (build-system go-build-system)
     (arguments
      (list
