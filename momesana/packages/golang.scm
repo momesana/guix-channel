@@ -7,6 +7,7 @@
   #:use-module (gnu packages golang)
   #:use-module (gnu packages golang-build)
   #:use-module (gnu packages golang-check)
+  #:use-module (gnu packages golang-compression)
   #:use-module (gnu packages golang-web)
   #:use-module (gnu packages golang-xyz))
 
@@ -383,3 +384,17 @@ syntax highlighted HTML, ANSI- coloured text, etc.")
        (file-name (git-file-name "go-github-com-pilebones-go-udev" version))
        (sha256
         (base32 "1b1fn4dbcic6pvriwfriibr7vnkcwnwsw6s2cig30lq2yfi5f85a"))))))
+
+(define-public go-github-com-nwaples-rardecode-v2-2.4
+  (package
+    (inherit go-github-com-nwaples-rardecode-v2)
+    (version "2.4.5")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/nwaples/rardecode")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name "go-github-com-nwaples-rardecode-v2" version))
+       (sha256
+        (base32 "177s0qnchp2i092wq2vdr2hfvygj6fqb8r9widf565ndrligmsjj"))))))
