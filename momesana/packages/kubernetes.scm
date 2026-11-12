@@ -55,3 +55,28 @@ installs the statically linked binary published by the Helm project.")
 managing the resources of a Kubernetes cluster.  This package installs the
 statically linked binary published by the project.")
     (license license:asl2.0)))
+
+(define-public cilium-cli
+  (package
+    (name "cilium-cli")
+    (version "0.20.2")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (string-append "https://github.com/cilium/cilium-cli/releases/download/v"
+                           version "/cilium-linux-amd64.tar.gz"))
+       (file-name (string-append name "-" version "-linux-amd64.tar.gz"))
+       (sha256
+        (base32 "0mh8qdzvn4i0qiky0dm9fvgifl7wzrsd4rs5m3qq83pdpxi4l8mp"))))
+    (build-system copy-build-system)
+    (arguments
+     (list #:install-plan ''(("cilium" "bin/"))))
+    (supported-systems '("x86_64-linux"))
+    (home-page "https://github.com/cilium/cilium-cli")
+    (synopsis "Command-line tool for Cilium")
+    (description
+     "@command{cilium} installs and manages Cilium, the eBPF-based network
+plugin for Kubernetes, and checks a cluster's status and connectivity.  This
+package installs the statically linked binary published by the Cilium
+project.")
+    (license license:asl2.0)))
