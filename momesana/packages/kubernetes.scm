@@ -1,12 +1,45 @@
 (define-module (momesana packages kubernetes)
   #:use-module (guix packages)
   #:use-module (guix download)
+  #:use-module (guix gexp)
   #:use-module (guix build-system copy)
   #:use-module ((guix licenses) #:prefix license:))
 
 ;; Upstream release binaries: they are statically linked, so they run
 ;; unmodified on Guix System.  Building from source would mean packaging
 ;; several hundred Go modules for each.
+
+;; Guix's kubectl lags behind: kubectl only supports API servers within
+;; one minor version, so it must follow the cluster's Kubernetes version.
+(define-public kubectl
+  (package
+    (name "kubectl")
+    (version "1.36.6")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (string-append "https://dl.k8s.io/release/v" version
+                           "/bin/linux/amd64/kubectl"))
+       (file-name name)
+       (sha256
+        (base32 "0d16ia3620kngka5vgiqwwjpf0ldap870x1hjav654nw55kqp099"))))
+    (build-system copy-build-system)
+    (arguments
+     (list #:install-plan ''(("kubectl" "bin/"))
+           #:phases
+           #~(modify-phases %standard-phases
+               (add-after 'install 'make-executable
+                 (lambda _
+                   (chmod (string-append #$output "/bin/kubectl") #o555))))))
+    (supported-systems '("x86_64-linux"))
+    (home-page "https://kubernetes.io")
+    (synopsis "Command-line tool for Kubernetes")
+    (description
+     "@command{kubectl} runs commands against Kubernetes clusters: it deploys
+applications, inspects and manages cluster resources and shows logs.  This
+package installs the statically linked binary published by the Kubernetes
+project.")
+    (license license:asl2.0)))
 
 ;; Guix's "helm" is a synthesizer.
 (define-public kubernetes-helm
