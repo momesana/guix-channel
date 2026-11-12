@@ -36,3 +36,29 @@
 operating system for Kubernetes nodes.  This package installs the statically
 linked binary published by the Talos project.")
     (license license:mpl2.0)))
+
+;; Also a statically linked upstream release binary, like talosctl.
+(define-public talhelper
+  (package
+    (name "talhelper")
+    (version "3.1.17")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (string-append "https://github.com/budimanjojo/talhelper/releases/download/v"
+                           version "/talhelper_linux_amd64.tar.gz"))
+       (file-name (string-append name "-" version "-linux-amd64.tar.gz"))
+       (sha256
+        (base32 "0172bfwqsw2llwiwlbxyzg3zn3wvj06h5i22m2v3fih0d4jidyfz"))))
+    (build-system copy-build-system)
+    (arguments
+     (list #:install-plan ''(("talhelper" "bin/"))))
+    (supported-systems '("x86_64-linux"))
+    (home-page "https://budimanjojo.github.io/talhelper/")
+    (synopsis "Generate Talos Linux machine configurations")
+    (description
+     "@command{talhelper} generates the machine configuration of every node in
+a Talos Linux cluster from one @file{talconfig.yaml} and a SOPS-encrypted
+secrets file, so the cluster's Talos configuration can be kept in Git.  This
+package installs the statically linked binary published by the project.")
+    (license license:bsd-3)))
