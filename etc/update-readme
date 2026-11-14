@@ -1,0 +1,101 @@
+#!/bin/sh
+# -*- mode: scheme -*-
+# Regenerate the package table in README.md from the package definitions.
+#
+#   etc/update-readme
+#
+# Libraries (go-*, rust-*) are left out.
+exec guix repl -L "$(dirname "$(realpath "$0")")/.." -- "$0" "$@"
+!#
+
+(use-modules (guix packages)
+             (guix licenses)
+             (guix discovery)
+             (guix diagnostics)
+             (ice-9 match)
+             (ice-9 rdelim)
+             (ice-9 regex)
+             (srfi srfi-1)
+             (srfi srfi-26))
+
+(define channel
+  (dirname (dirname (canonicalize-path (car (command-line))))))
+
+(define readme (string-append channel "/README.md"))
+(define begin-marker "<!-- package table: begin -->")
+(define end-marker "<!-- package table: end -->")
+
+(define (library? package)
+  (any (cut string-prefix? <> (package-name package)) '("go-" "rust-")))
+
+(define (packages)
+  (sort (fold-module-public-variables
+         (lambda (object result)
+           (if (and (package? object) (not (library? object)))
+               (cons object result)
+               result))
+         '()
+         (all-modules `((,channel . "momesana/packages"))
+                      #:warn (const #f)))
+        (lambda (a b) (string<? (package-name a) (package-name b)))))
+
+(define (cell text)
+  (regexp-substitute/global #f "\\|" text 'pre "\\|" 'post))
+
+(define (licenses package)
+  (string-join (map license-name
+                    (match (package-license package)
+                      ((lst ...) lst)
+                      (license (list license))))
+               ", "))
+
+(define (section package)
+  (basename (location-file (package-location package)) ".scm"))
+
+(define (upstream package)
+  (let* ((url (package-home-page package))
+         (forge (string-match "^https://(github|gitlab)\\.com/([^/]+/[^/]+)" url))
+         (host (string-match "^https?://(www\\.)?([^/]+)" url)))
+    (format #f "[~a](~a)"
+            (match:substring (or forge host) 2)
+            url)))
+
+(define (row package)
+  (format #f "| [~a](#~a) | ~a | ~a | ~a | ~a |"
+          (package-name package)
+          (section package)
+          (package-version package)
+          (cell (licenses package))
+          (cell (package-synopsis package))
+          (upstream package)))
+
+(define (table)
+  (string-join
+   (cons* "| Package | Version | License | Description | Upstream |"
+          "| ------- | ------- | ------- | ----------- | -------- |"
+          (map row (packages)))
+   "\n"))
+
+(define (read-lines file)
+  (call-with-input-file file
+    (lambda (port)
+      (let loop ((lines '()))
+        (match (read-line port)
+          ((? eof-object?) (reverse lines))
+          (line (loop (cons line lines))))))))
+
+(define (update lines)
+  (let* ((rest (member begin-marker lines))
+         (tail (and rest (member end-marker rest))))
+    (unless tail
+      (format (current-error-port) "update-readme: markers not found in ~a~%"
+              readme)
+      (exit 1))
+    (append (take-while (negate (cut string=? <> begin-marker)) lines)
+            (list begin-marker (table))
+            tail)))
+
+(call-with-output-file readme
+  (let ((lines (update (read-lines readme))))
+    (lambda (port)
+      (for-each (lambda (line) (display line port) (newline port)) lines))))

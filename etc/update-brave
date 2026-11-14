@@ -78,10 +78,11 @@ sed -i -e "s/^    (version \"$current\")$/    (version \"$version\")/" \
        -e "s/(base32 \"[0-9a-z]*\")/(base32 \"$nix_base32\")/" "$module"
 
 guix build -L "$channel" brave
+"$channel/etc/update-readme"
 
 if [[ $commit == yes ]]; then
-  git -C "$channel" commit -S -q -m "brave: Update to $version." -- "$module"
+  git -C "$channel" commit -S -q -m "brave: Update to $version." -- "$module" README.md
   git -C "$channel" log -1 --format='Committed %h %s'
 else
-  echo "Updated $module; to commit: git commit -S -m 'brave: Update to $version.' $module"
+  echo "Updated $module; to commit: git -C $channel commit -S -m 'brave: Update to $version.' -- momesana/packages/brave.scm README.md"
 fi

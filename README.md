@@ -31,8 +31,33 @@ checkout's top directory:
 
     guix build -L . PACKAGE
 
-Each module `(momesana packages NAME)` is the file
-`momesana/packages/NAME.scm`. The sections below are named after them.
+## Packages
+
+<!-- package table: begin -->
+| Package | Version | License | Description | Upstream |
+| ------- | ------- | ------- | ----------- | -------- |
+| [amtterm](#amtterm) | 1.8 | GPL 2+ | Serial-over-LAN and IDE redirection client for Intel AMT | [kraxel/amtterm](https://github.com/kraxel/amtterm) |
+| [brave](#brave) | 1.98.62 | MPL 2.0 | Chromium-based web browser with built-in ad and tracker blocking | [brave.com](https://brave.com/) |
+| [cilium-cli](#kubernetes) | 0.20.2 | ASL 2.0 | Command-line tool for Cilium | [cilium/cilium-cli](https://github.com/cilium/cilium-cli) |
+| [dank-material-shell-qml](#dms) | 2.0.0 | Expat | Quickshell-based desktop shell for Wayland compositors | [duxlabs-dev/dux-shell](https://github.com/duxlabs-dev/dux-shell) |
+| [dank-material-shell-qml-host](#host) | 2.0.0 | Expat | Quickshell-based desktop shell for Wayland compositors | [duxlabs-dev/dux-shell](https://github.com/duxlabs-dev/dux-shell) |
+| [dms](#dms) | 2.0.0 | Expat | Command-line backend for Dux Shell | [duxlabs-dev/dux-shell](https://github.com/duxlabs-dev/dux-shell) |
+| [dux-files](#dms) | 2.0.0 | Expat | File manager for the Dux desktop | [duxlabs-dev/dux-files](https://github.com/duxlabs-dev/dux-files) |
+| [fluxcd](#fluxcd) | 2.10.0 | ASL 2.0 | Command-line tool for Flux, the GitOps toolkit for Kubernetes | [fluxcd.io](https://fluxcd.io) |
+| [k9s](#kubernetes) | 0.51.0 | ASL 2.0 | Terminal user interface for Kubernetes clusters | [k9scli.io](https://k9scli.io) |
+| [kubectl](#kubernetes) | 1.36.6 | ASL 2.0 | Command-line tool for Kubernetes | [kubernetes.io](https://kubernetes.io) |
+| [kubernetes-helm](#kubernetes) | 4.3.1 | ASL 2.0 | Package manager for Kubernetes | [helm.sh](https://helm.sh) |
+| [quickshell-host](#host) | 0.3.2 | LGPL 3 | QtQuick-based desktop shell toolkit | [quickshell.outfoxxed.me](https://quickshell.outfoxxed.me) |
+| [resvg](#resvg) | 0.49.0 | ASL 2.0, Expat | SVG rendering tool | [linebender/resvg](https://github.com/linebender/resvg) |
+| [solaar](#solaar) | 1.1.20 | GPL 2 | Linux devices manager for the Logitech Unifying Receiver | [pwr-solaar.github.io](https://pwr-solaar.github.io/Solaar/) |
+| [talhelper](#talos) | 3.1.17 | Modified BSD | Generate Talos Linux machine configurations | [budimanjojo.github.io](https://budimanjojo.github.io/talhelper/) |
+| [talosctl](#talos) | 1.14.5 | MPL 2.0 | Command-line tool for Talos Linux | [talos.dev](https://www.talos.dev) |
+| [telegram-desktop](#telegram) | 7.3.3 | LGPL 3, GPL 3+ | Telegram Desktop | [desktop.telegram.org](https://desktop.telegram.org/) |
+<!-- package table: end -->
+
+Libraries are left out; `etc/update-readme` regenerates the table. Each
+module `(momesana packages NAME)` is the file `momesana/packages/NAME.scm`.
+The sections below are named after them.
 
 ## [dms](momesana/packages/dms.scm)
 
