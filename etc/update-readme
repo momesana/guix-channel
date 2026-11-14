@@ -2,7 +2,8 @@
 # -*- mode: scheme -*-
 # Regenerate the package table in README.md from the package definitions.
 #
-#   etc/update-readme
+#   etc/update-readme           rewrite the table
+#   etc/update-readme --check   only fail if the table is out of date
 #
 # Libraries (go-*, rust-*) are left out.
 exec guix repl -L "$(dirname "$(realpath "$0")")/.." -- "$0" "$@"
@@ -70,11 +71,9 @@ exec guix repl -L "$(dirname "$(realpath "$0")")/.." -- "$0" "$@"
           (upstream package)))
 
 (define (table)
-  (string-join
-   (cons* "| Package | Version | License | Description | Upstream |"
-          "| ------- | ------- | ------- | ----------- | -------- |"
-          (map row (packages)))
-   "\n"))
+  (cons* "| Package | Version | License | Description | Upstream |"
+         "| ------- | ------- | ------- | ----------- | -------- |"
+         (map row (packages))))
 
 (define (read-lines file)
   (call-with-input-file file
@@ -92,10 +91,21 @@ exec guix repl -L "$(dirname "$(realpath "$0")")/.." -- "$0" "$@"
               readme)
       (exit 1))
     (append (take-while (negate (cut string=? <> begin-marker)) lines)
-            (list begin-marker (table))
+            (cons begin-marker (table))
             tail)))
 
-(call-with-output-file readme
-  (let ((lines (update (read-lines readme))))
-    (lambda (port)
-      (for-each (lambda (line) (display line port) (newline port)) lines))))
+(define check? (member "--check" (cdr (command-line))))
+
+(let* ((lines (read-lines readme))
+       (updated (update lines)))
+  (cond ((equal? lines updated))
+        (check?
+         (format (current-error-port)
+                 "update-readme: the package table in README.md is out of \
+date; run etc/update-readme~%")
+         (exit 1))
+        (else
+         (call-with-output-file readme
+           (lambda (port)
+             (for-each (lambda (line) (display line port) (newline port))
+                       updated))))))

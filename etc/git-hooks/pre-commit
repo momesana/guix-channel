@@ -1,0 +1,17 @@
+#!/bin/sh
+# Refuse a commit that changes a package module while README.md's package
+# table is out of date.  Install with:
+#
+#   ln -s ../../etc/git-hooks/pre-commit .git/hooks/pre-commit
+if git diff --cached --quiet -- 'momesana/packages/*.scm'; then
+  exit 0
+fi
+# The check reads the files on disk, so they must match what is committed.
+if ! git diff --quiet -- README.md 'momesana/packages/*.scm' ||
+   [ -n "$(git ls-files --others --exclude-standard -- 'momesana/packages/*.scm')" ]
+then
+  echo "pre-commit: README.md or a package module has unstaged changes;" \
+       "stage or stash them so the table check sees the commit" >&2
+  exit 1
+fi
+exec "$(git rev-parse --show-toplevel)/etc/update-readme" --check

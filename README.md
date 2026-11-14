@@ -55,9 +55,13 @@ checkout's top directory:
 | [telegram-desktop](#telegram) | 7.3.3 | LGPL 3, GPL 3+ | Telegram Desktop | [desktop.telegram.org](https://desktop.telegram.org/) |
 <!-- package table: end -->
 
-Libraries are left out; `etc/update-readme` regenerates the table. Each
-module `(momesana packages NAME)` is the file `momesana/packages/NAME.scm`.
-The sections below are named after them.
+Libraries are left out; `etc/update-readme` regenerates the table, and
+`etc/git-hooks/pre-commit` refuses commits that leave it out of date:
+
+    ln -s ../../etc/git-hooks/pre-commit .git/hooks/pre-commit
+
+Each module `(momesana packages NAME)` is the file
+`momesana/packages/NAME.scm`. The sections below are named after them.
 
 ## [dms](momesana/packages/dms.scm)
 
