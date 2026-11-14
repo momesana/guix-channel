@@ -1,33 +1,52 @@
-# momesana guix channel
+# momesana Guix channel
 
-Personal Guix channel, module namespace `(momesana ...)`.
+A [Guix](https://guix.gnu.org) channel with packages that Guix lacks, or has
+only in an older or broken version. It depends on
+[nonguix](https://gitlab.com/nonguix/nonguix), whose
+`chromium-binary-build-system` the `brave` package uses; `guix pull` fetches
+nonguix along with this channel.
 
-    guix build -L ~/repos/guix/channel PACKAGE     # without pulling
+The packages are built and used on `x86_64-linux`. Those installing an
+upstream release binary support only that system.
 
-or in `~/.config/guix/channels.scm`:
+## Using the channel
+
+Add the channel to `~/.config/guix/channels.scm`:
 
     (cons (channel
             (name 'momesana)
-            (url "ssh://git@git.momesana.io/momesana/guix-channel.git")
+            (url "https://github.com/momesana/guix-channel")
             (introduction
              (make-channel-introduction
-              "9d1d8934f8f478081f3740175e474042f17d658f"
+              "72402bb9e8847025928d513238d647eaecd60255"
               (openpgp-fingerprint
                "1338 3E41 986B 07C8 402A  62D2 9FE9 38BB FAA0 4E94"))))
           %default-channels)
 
-## `(momesana packages dms)`
+and run `guix pull`. The introduction lets Guix check that every commit it
+pulls is signed by an authorized key (see `.guix-authorizations`).
+
+To build a package from a checkout without pulling, run this in the
+checkout's top directory:
+
+    guix build -L . PACKAGE
+
+Each module `(momesana packages NAME)` is the file
+`momesana/packages/NAME.scm`. The sections below are named after them.
+
+## [dms](momesana/packages/dms.scm)
 
 Dux Shell (formerly DankMaterialShell): the `dms` Go CLI and
 `dank-material-shell-qml`, the QML part installed under
-`share/dms/quickshell`.
+`share/dms/quickshell`. Also `dux-files`, the Dux Files file manager. The
+Go libraries they need beyond Guix's are in
+[golang](momesana/packages/golang.scm).
 
-## `(momesana packages brave)`
+## [brave](momesana/packages/brave.scm)
 
 `brave`, the Brave browser, repackaged from Brave's official `.deb` with
 nonguix's `chromium-binary-build-system`, like nonguix's
-`google-chrome-stable`. The channel therefore depends on nonguix
-(`.guix-channel`).
+`google-chrome-stable`.
 
 Brave publishes a stable release about every five days. To update:
 
@@ -38,21 +57,42 @@ It takes the newest version from Brave's stable apt repository and checks
 the chain from Brave's signing keys (pinned by fingerprint in the script)
 through the signed `InRelease` and the package index to the `.deb`. If
 Brave's keyring changes, it stops: check the new key, then update the
-fingerprints. After committing, `guix pull` and reconfigure as usual.
+fingerprints.
 
-## `(momesana packages fluxcd)`
+## [telegram](momesana/packages/telegram.scm)
 
-`fluxcd`, the `flux` command-line tool for Flux (Kubernetes GitOps). It
-installs the statically linked release binary, which runs unmodified on
-Guix System; building from source would mean packaging several hundred
-Go modules. Named `fluxcd` because Guix already has an unrelated `flux`.
+`telegram-desktop`, newer than Guix's. This version of Telegram Desktop
+links Rust libraries (the tlottie Lottie renderer and the TON wallet core); they
+are built as one static library, `tdesktop-rust`, like upstream's Linux
+build does. Their crate sources are in
+[rust-crates](momesana/packages/rust-crates.scm).
 
-## `(momesana packages resvg)`
+## [kubernetes](momesana/packages/kubernetes.scm)
 
-`resvg`, the SVG renderer's command-line tool; yazi uses it for SVG previews.
-Guix ships resvg's crate source, but no package for the tool.
+`kubectl`, `kubernetes-helm` (Guix's `helm` is a synthesizer), `k9s` and
+`cilium-cli`. kubectl supports API servers only within one minor version of
+its own, and Guix's lags behind.
 
-## `(momesana packages solaar)`
+## [talos](momesana/packages/talos.scm)
+
+`talosctl`, the command-line tool for Talos Linux, and `talhelper`, which
+generates a Talos cluster's machine configurations.
+
+## [fluxcd](momesana/packages/fluxcd.scm)
+
+`fluxcd`, the `flux` command-line tool for Flux (Kubernetes GitOps). Named
+`fluxcd` because Guix already has an unrelated `flux`.
+
+Like the kubernetes and talos packages, it installs the statically linked
+upstream release binary, which runs unmodified on Guix System; building
+from source would mean packaging several hundred Go modules.
+
+## [resvg](momesana/packages/resvg.scm)
+
+`resvg`, the SVG renderer's command-line tool (yazi uses it for SVG
+previews). Guix ships resvg's crate source, but no package for the tool.
+
+## [solaar](momesana/packages/solaar.scm)
 
 `solaar` with a working wrapper. Since PR #9262 (commit 6605d4dc5f) Guix's
 package replaces the standard `wrap` phase with one that only sets
@@ -63,7 +103,7 @@ sets `GI_TYPELIB_PATH` after it, and adds libnotify so notifications work
 the same name and version as Guix's, so refer to the package object rather
 than a specification.
 
-## `(momesana packages amtterm)`
+## [amtterm](momesana/packages/amtterm.scm)
 
 `amtterm`, the Intel AMT serial-over-LAN client, with `amtider` (IDE
 redirection) and `amttool` (SOAP-based power control, which only older AMT
@@ -90,7 +130,7 @@ not upstream yet.
 
 Without `-C`, amtterm accepts any certificate.
 
-## `(momesana packages rust-crates)`
+## [rust-crates](momesana/packages/rust-crates.scm)
 
 Crate sources for this channel's Rust packages, looked up with
 `(cargo-inputs 'NAME #:module '(momesana packages rust-crates))`. Guix's
@@ -99,12 +139,13 @@ regenerated here from the package's `Cargo.lock`:
 
     guix import crate --lockfile=Cargo.lock NAME
 
-## `(momesana packages host)`
+## [host](momesana/packages/host.scm)
 
 Makes Guix's authentication stack -- the polkit **agent** and `pam_unix` --
 work when Guix runs on a foreign distribution whose init system is systemd.
-Nothing here is specific to such a host: all fixes fall back to the Guix System behaviour at run time, so the
-same packages are correct on Guix System.
+Nothing here is specific to such a host: all fixes fall back to the Guix
+System behaviour at run time, so the same packages are correct on Guix
+System.
 
 Three assumptions in the upstream packages only hold on Guix System:
 
@@ -155,9 +196,9 @@ Three assumptions in the upstream packages only hold on Guix System:
 
 ### Exports
 
-- `with-host-integration` -- rewrites a package to use all three variants. They are
-  attached as *replacements* (grafts), so this costs a few dozen reference
-  rewrites rather than rebuilding Qt, GTK+ and the rest.
+- `with-host-integration` -- rewrites a package to use all three variants.
+  They are attached as *replacements* (grafts), so this costs a few dozen
+  reference rewrites rather than rebuilding Qt, GTK+ and the rest.
 
       (use-modules (momesana packages host))
       (with-host-integration some-package)
@@ -167,17 +208,15 @@ Three assumptions in the upstream packages only hold on Guix System:
 - `quickshell-host` -- plain quickshell with the above applied, for a
   setup without DankMaterialShell.
 
-The `elogind`, `polkit` and `linux-pam` variants themselves are private, so the channel does
-not shadow the upstream packages of those names.
+The `elogind`, `polkit` and `linux-pam` variants themselves are private, so
+the channel does not shadow the upstream packages of those names.
 
 ### Installing on a systemd host
 
 Exactly one quickshell may be in the profile, otherwise the two differing
 store items collide over `bin/quickshell`:
 
-    guix package -L ~/repos/guix/channel \
-      -r quickshell -r dank-material-shell-qml \
-      -r dank-material-shell-qml-host-polkit \
+    guix package -r quickshell -r dank-material-shell-qml \
       -i dank-material-shell-qml-host
 
 Then restart the shell, check that an agent registers, and lock and unlock
@@ -187,3 +226,15 @@ the screen once:
     niri msg action spawn -- dms run -c ~/.guix-profile/share/dms/quickshell
     pkexec true          # must show DMS's auth dialog
     dms ipc -c ~/.guix-profile/share/dms/quickshell call lock lock
+
+## Contributing
+
+Issues and pull requests are welcome on GitHub. Pull requests are not
+merged through GitHub: `guix pull` accepts only commits signed by a key in
+`.guix-authorizations`, so changes are applied and signed by the
+maintainer, keeping your authorship.
+
+## License
+
+GPLv3 or later, like Guix; see `LICENSE`. The patches under
+`momesana/packages/` keep the licenses of the projects they patch.
