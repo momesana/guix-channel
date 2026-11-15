@@ -2,9 +2,9 @@
 
 A [Guix](https://guix.gnu.org) channel with packages that Guix lacks, or has
 only in an older or broken version. It depends on
-[nonguix](https://gitlab.com/nonguix/nonguix), whose
-`chromium-binary-build-system` the `brave` package uses; `guix pull` fetches
-nonguix along with this channel.
+[nonguix](https://gitlab.com/nonguix/nonguix): `brave` uses its
+`chromium-binary-build-system`, and the `messaging` packages inherit its
+package definitions. `guix pull` fetches nonguix along with this channel.
 
 The packages are built and used on `x86_64-linux`. Those installing an
 upstream release binary support only that system.
@@ -43,12 +43,14 @@ checkout's top directory:
 | [dank-material-shell-qml-host](#host) | 2.0.0 | Expat | Quickshell-based desktop shell for Wayland compositors | [duxlabs-dev/dux-shell](https://github.com/duxlabs-dev/dux-shell) |
 | [dms](#dms) | 2.0.0 | Expat | Command-line backend for Dux Shell | [duxlabs-dev/dux-shell](https://github.com/duxlabs-dev/dux-shell) |
 | [dux-files](#dms) | 2.0.0 | Expat | File manager for the Dux desktop | [duxlabs-dev/dux-files](https://github.com/duxlabs-dev/dux-files) |
+| [element-desktop](#messaging) | 1.12.35 | ASL 2.0 | Matrix collaboration client for desktop | [element.io](https://element.io/) |
 | [fluxcd](#fluxcd) | 2.10.0 | ASL 2.0 | Command-line tool for Flux, the GitOps toolkit for Kubernetes | [fluxcd.io](https://fluxcd.io) |
 | [k9s](#kubernetes) | 0.51.0 | ASL 2.0 | Terminal user interface for Kubernetes clusters | [k9scli.io](https://k9scli.io) |
 | [kubectl](#kubernetes) | 1.36.6 | ASL 2.0 | Command-line tool for Kubernetes | [kubernetes.io](https://kubernetes.io) |
 | [kubernetes-helm](#kubernetes) | 4.3.1 | ASL 2.0 | Package manager for Kubernetes | [helm.sh](https://helm.sh) |
 | [quickshell-host](#host) | 0.3.2 | LGPL 3 | QtQuick-based desktop shell toolkit | [quickshell.outfoxxed.me](https://quickshell.outfoxxed.me) |
 | [resvg](#resvg) | 0.49.0 | ASL 2.0, Expat | SVG rendering tool | [linebender/resvg](https://github.com/linebender/resvg) |
+| [signal-desktop](#messaging) | 8.35.0 | AGPL 3 | Private messenger using the Signal protocol | [signal.org](https://signal.org/) |
 | [solaar](#solaar) | 1.1.20 | GPL 2 | Linux devices manager for the Logitech Unifying Receiver | [pwr-solaar.github.io](https://pwr-solaar.github.io/Solaar/) |
 | [talhelper](#talos) | 3.1.17 | Modified BSD | Generate Talos Linux machine configurations | [budimanjojo.github.io](https://budimanjojo.github.io/talhelper/) |
 | [talosctl](#talos) | 1.14.5 | MPL 2.0 | Command-line tool for Talos Linux | [talos.dev](https://www.talos.dev) |
@@ -95,6 +97,12 @@ links Rust libraries (the tlottie Lottie renderer and the TON wallet core); they
 are built as one static library, `tdesktop-rust`, like upstream's Linux
 build does. Their crate sources are in
 [rust-crates](momesana/packages/rust-crates.scm).
+
+## [messaging](momesana/packages/messaging.scm)
+
+`signal-desktop` and `element-desktop`, newer than nonguix's. They inherit
+nonguix's packages and change only the version and the `.deb`'s hash. Once
+nonguix catches up, they can be removed.
 
 ## [kubernetes](momesana/packages/kubernetes.scm)
 
