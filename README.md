@@ -62,6 +62,13 @@ Libraries are left out; `etc/update-readme` regenerates the table, and
 
     ln -s ../../etc/git-hooks/pre-commit .git/hooks/pre-commit
 
+`etc/check-updates` lists the packages with a newer upstream release
+(`--all` lists every package). Like npm-check-updates, it colours the new
+version red for a major release (or a minor one below 1.0), cyan for a
+minor and green for a patch release. kubectl stays on its minor version.
+It also shows the Guix and nonguix versions, in bold once they are as new
+as ours.
+
 Each module `(momesana packages NAME)` is the file
 `momesana/packages/NAME.scm`. The sections below are named after them.
 

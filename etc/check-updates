@@ -1,0 +1,267 @@
+#!/bin/sh
+# -*- mode: scheme -*-
+# Compare the channel's package versions with the newest upstream releases.
+#
+#   etc/check-updates           list the packages with a newer release
+#   etc/check-updates --all     list every package
+#
+# The new version is coloured like npm-check-updates does: red for a major
+# release (or a minor one below 1.0), cyan for a minor one, green for a
+# patch release.  The Guix and nonguix columns show those channels'
+# versions of the package, in bold once they are as new as ours.  Upstream versions come from the source's git tags, or
+# from the apt repository a .deb is taken from.  Pre-releases are skipped.
+exec guix repl -L "$(dirname "$(realpath "$0")")/.." -- "$0" "$@"
+!#
+
+(use-modules (gnu packages)
+             (guix packages)
+             (guix discovery)
+             (guix git)
+             (guix git-download)
+             (guix http-client)
+             (guix utils)
+             (ice-9 format)
+             (ice-9 match)
+             (ice-9 regex)
+             (ice-9 textual-ports)
+             (srfi srfi-1)
+             (srfi srfi-26)
+             (web uri))
+
+(define channel
+  (dirname (dirname (canonicalize-path (car (command-line))))))
+
+(define all? (member "--all" (cdr (command-line))))
+
+(define (library? package)
+  (any (cut string-prefix? <> (package-name package)) '("go-" "rust-")))
+
+(define (packages)
+  (sort (fold-module-public-variables
+         (lambda (object result)
+           (if (and (package? object) (not (library? object)))
+               (cons object result)
+               result))
+         '()
+         (all-modules `((,channel . "momesana/packages"))
+                      #:warn (const #f)))
+        (lambda (a b) (string<? (package-name a) (package-name b)))))
+
+;; Where to look when the package's source does not say.
+(define %upstreams
+  `(("brave"
+     apt "https://brave-browser-apt-release.s3.brave.com/dists/stable/main/binary-amd64/Packages"
+     "brave-browser")
+    ("signal-desktop"
+     apt "https://updates.signal.org/desktop/apt/dists/xenial/main/binary-amd64/Packages"
+     "signal-desktop")
+    ("element-desktop"
+     apt "https://packages.element.io/debian/dists/default/main/binary-amd64/Packages"
+     "element-desktop")
+    ("kubectl" git "https://github.com/kubernetes/kubernetes")
+    ("kubernetes-helm" git "https://github.com/helm/helm")))
+
+;; Packages that stay on their current major.minor release.  kubectl
+;; follows the homelab cluster's minor version.
+(define %pinned-minor '("kubectl"))
+
+(define (forge-repository url)
+  (let* ((url (if (string? url) url ""))
+         (url (match (string-contains url "/-/")
+                (#f url)
+                (index (string-take url index))))
+         (m (or (string-match "^https://github\\.com/[^/]+/[^/]+" url)
+                (string-match "^https://gitlab\\.com/[^/]+(/[^/]+)+" url))))
+    (and m
+         (let ((repository (match:substring m)))
+           (if (string-suffix? ".git" repository)
+               (string-drop-right repository 4)
+               repository)))))
+
+(define (upstream package)
+  (or (assoc-ref %upstreams (package-name package))
+      (let ((source (package-source package)))
+        (match (and (origin? source) (origin-uri source))
+          ((? git-reference? ref) (list 'git (git-reference-url ref)))
+          (uri
+           (let ((repository
+                  (or (forge-repository
+                       (match uri ((first . _) first) (_ uri)))
+                      (forge-repository (package-home-page package)))))
+             (and repository (list 'git repository))))))))
+
+(define stable-version-rx
+  (make-regexp "^([A-Za-z_-]*-)?v?([0-9]+(\\.[0-9]+)+)(-[0-9]+)?$"))
+
+(define (git-versions url)
+  (filter-map (lambda (ref)
+                (and=> (regexp-exec stable-version-rx
+                                    (string-drop ref (string-length
+                                                      "refs/tags/")))
+                       (cut match:substring <> 2)))
+              (remote-refs url #:tags? #t)))
+
+(define (apt-versions url name)
+  (let* ((port (http-fetch (string->uri url)))
+         (text (get-string-all port)))
+    (close-port port)
+    (let loop ((lines (string-split text #\newline))
+               (package #f)
+               (versions '()))
+      (match lines
+        (() versions)
+        ((line . rest)
+         (cond ((string-prefix? "Package: " line)
+                (loop rest (string-drop line 9) versions))
+               ((and (string-prefix? "Version: " line)
+                     (equal? package name)
+                     (regexp-exec stable-version-rx (string-drop line 9)))
+                => (lambda (m)
+                     (loop rest package (cons (match:substring m 2) versions))))
+               (else (loop rest package versions))))))))
+
+(define cache (make-hash-table))
+
+(define (upstream-versions spec)
+  (or (hash-ref cache spec)
+      (let ((versions (match spec
+                        (('git url) (git-versions url))
+                        (('apt url name) (apt-versions url name)))))
+        (hash-set! cache spec versions)
+        versions)))
+
+(define (newest versions)
+  (reduce (lambda (a b) (if (version>? a b) a b)) #f versions))
+
+(define (same-minor? current version)
+  (equal? (version-major+minor current) (version-major+minor version)))
+
+;; The first component that differs, and how big the update is.
+(define (difference current latest)
+  (let loop ((index 0)
+             (old (string-split current #\.))
+             (new (string-split latest #\.)))
+    (match (list old new)
+      (((o . old*) (n . new*))
+       (if (string=? o n)
+           (loop (+ index 1) old* new*)
+           (values index
+                   (cond ((= index 0) 'major)
+                         ((and (= index 1)
+                               (string-prefix? "0." current)) 'major)
+                         ((= index 1) 'minor)
+                         (else 'patch)))))
+      (_ (values index 'patch)))))
+
+(define color?
+  (and (isatty? (current-output-port)) (not (getenv "NO_COLOR"))))
+
+(define (paint code text)
+  (if color? (format #f "\x1b[~am~a\x1b[0m" code text) text))
+
+(define %colors '((major . 31) (minor . 36) (patch . 32)))
+
+(define (colorize current latest)
+  (call-with-values (lambda () (difference current latest))
+    (lambda (index level)
+      (let* ((parts (string-split latest #\.))
+             (head (string-join (take parts index) "."))
+             (tail (string-join (drop parts index) ".")))
+        (string-append head (if (zero? index) "" ".")
+                       (paint (assq-ref %colors level) tail))))))
+
+(define (channel-versions name)
+  "Return the newest versions of NAME in Guix and in nonguix, or #f."
+  (let ((name (if (string-suffix? "-host" name)
+                  (string-drop-right name (string-length "-host"))
+                  name)))
+    (define (newest-in prefix)
+      (newest (filter-map (lambda (package)
+                            (and (string-prefix?
+                                  prefix
+                                  (location-file (package-location package)))
+                                 (package-version package)))
+                          (find-packages-by-name name))))
+    (values (newest-in "gnu/") (newest-in "nongnu/"))))
+
+(define (check package)
+  (let ((name (package-name package))
+        (current (package-version package)))
+    (call-with-values (lambda () (channel-versions name))
+      (lambda (guix nonguix)
+        (append
+         (list name current guix nonguix)
+         (catch #t
+           (lambda ()
+             (match (upstream package)
+               (#f (list 'unknown "no upstream known"))
+               (spec
+                (let* ((versions (upstream-versions spec))
+                       (latest (newest versions))
+                       (pinned? (member name %pinned-minor))
+                       (wanted (if pinned?
+                                   (newest (filter (cut same-minor? current <>)
+                                                   versions))
+                                   latest))
+                       (note (and pinned? latest (version>? latest wanted)
+                                  latest)))
+                  (cond ((not wanted) (list 'unknown "no release found"))
+                        ((version>? wanted current)
+                         (list 'outdated wanted note))
+                        (else (list 'current wanted note)))))))
+           (lambda (key . args)
+             (list 'unknown (format #f "~a: ~s" key args)))))))))
+
+(define (pad text width)
+  (string-append text (make-string (max 0 (- width (string-length text)))
+                                   #\space)))
+
+;; A Guix or nonguix version, bold when it has caught up with ours.
+(define (channel-cell version current width)
+  (cond ((not version) (paint 2 (pad "-" width)))
+        ((version>? current version) (pad version width))
+        (else (string-append (paint 1 version)
+                             (pad "" (- width (string-length version)))))))
+
+(define (report results)
+  (define shown
+    (filter (match-lambda ((_ _ _ _ 'current . _) all?) (_ #t)) results))
+  (define (width header column)
+    (apply max (string-length header)
+           (map (lambda (row) (string-length (or (list-ref row column) "-")))
+                shown)))
+  (if (null? shown)
+      (format #t "All packages are up to date.~%")
+      (let ((name-width (width "Package" 0))
+            (ours-width (width "Ours" 1))
+            (guix-width (width "Guix" 2))
+            (nonguix-width (width "nonguix" 3)))
+        (format #t "~a  ~a  ~a  ~a  Upstream~%"
+                (pad "Package" name-width) (pad "Ours" ours-width)
+                (pad "Guix" guix-width) (pad "nonguix" nonguix-width))
+        (for-each
+         (match-lambda
+           ((name current guix nonguix status . rest)
+            (format #t "~a  ~a  ~a  ~a  ~a~%"
+                    (pad name name-width)
+                    (pad current ours-width)
+                    (channel-cell guix current guix-width)
+                    (channel-cell nonguix current nonguix-width)
+                    (match (cons status rest)
+                      (('outdated latest note)
+                       (string-append
+                        (colorize current latest)
+                        (if note
+                            (paint 2 (format #f "  (pinned; ~a available)"
+                                             note))
+                            "")))
+                      (('current latest note)
+                       (paint 2 (if note
+                                    (format #f "up to date (pinned; ~a \
+available)" note)
+                                    "up to date")))
+                      (('unknown reason)
+                       (paint 33 (string-append "? " reason)))))))
+         shown))))
+
+(report (map check (packages)))
