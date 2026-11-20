@@ -48,6 +48,7 @@ checkout's top directory:
 | [k9s](#kubernetes) | 0.51.0 | ASL 2.0 | Terminal user interface for Kubernetes clusters | [k9scli.io](https://k9scli.io) |
 | [kubectl](#kubernetes) | 1.36.6 | ASL 2.0 | Command-line tool for Kubernetes | [kubernetes.io](https://kubernetes.io) |
 | [kubernetes-helm](#kubernetes) | 4.3.2 | ASL 2.0 | Package manager for Kubernetes | [helm.sh](https://helm.sh) |
+| [niri](#niri) | 26.04 | GPL 3+ | Scrollable-tiling Wayland compositor | [niri-wm/niri](https://github.com/niri-wm/niri) |
 | [quickshell-host](#host) | 0.3.2 | LGPL 3 | QtQuick-based desktop shell toolkit | [quickshell.outfoxxed.me](https://quickshell.outfoxxed.me) |
 | [signal-desktop](#messaging) | 8.36.0 | AGPL 3 | Private messenger using the Signal protocol | [signal.org](https://signal.org/) |
 | [solaar](#solaar) | 1.1.20 | GPL 2 | Linux devices manager for the Logitech Unifying Receiver | [pwr-solaar.github.io](https://pwr-solaar.github.io/Solaar/) |
@@ -173,6 +174,14 @@ not upstream yet.
     AMT_PASSWORD=... amtterm -C ca.pem HOST  # TLS, verifying the certificate
 
 Without `-C`, amtterm accepts any certificate.
+
+## [niri](momesana/packages/niri.scm)
+
+`niri`, Guix's niri with one patch: when `focus-column-left`/`-right` or
+`move-column-left`/`-right` can't go further, the view stretches past the
+first or last column and bounces back, only once while the key is held. The
+`column-edge-bounce` animation configures the bounce back, and `off` disables
+it. Not upstream yet.
 
 ## [rust-crates](momesana/packages/rust-crates.scm)
 

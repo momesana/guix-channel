@@ -1,0 +1,605 @@
+Stretch the view past the first or last column and bounce it back.
+
+When focus-column-left/right or move-column-left/right can't go further, the
+view quickly stretches towards the edge and bounces back.  Key repeats don't
+bounce again, so holding the key bounces only once.  The new
+`column-edge-bounce` animation configures the bounce back; `off` disables it.
+Not upstream yet; this is the 26.04 backport of the change prepared for a niri
+pull request.
+
+diff --git a/docs/wiki/Configuration:-Animations.md b/docs/wiki/Configuration:-Animations.md
+index 6441d33..43b0194 100644
+--- a/docs/wiki/Configuration:-Animations.md
++++ b/docs/wiki/Configuration:-Animations.md
+@@ -34,6 +34,10 @@ animations {
+         spring damping-ratio=1.0 stiffness=800 epsilon=0.0001
+     }
+ 
++    column-edge-bounce {
++        spring damping-ratio=1.0 stiffness=800 epsilon=0.0001
++    }
++
+     window-movement {
+         spring damping-ratio=1.0 stiffness=800 epsilon=0.0001
+     }
+@@ -295,6 +299,25 @@ animations {
+ }
+ ```
+ 
++#### `column-edge-bounce`
++
++<sup>Since: next release</sup>
++
++The view bouncing back after `focus-column-left`, `focus-column-right`, `move-column-left` or `move-column-right` stretched it past the first or last column.
++
++When one of these actions can't go further, the view quickly stretches towards the edge, then bounces back with this animation.
++Holding the key of the bind bounces only once.
++
++Set it to `off` to disable the stretch and the bounce.
++
++```kdl
++animations {
++    column-edge-bounce {
++        spring damping-ratio=1.0 stiffness=800 epsilon=0.0001
++    }
++}
++```
++
+ #### `window-movement`
+ 
+ <sup>Since: 0.1.5</sup>
+diff --git a/niri-config/src/animations.rs b/niri-config/src/animations.rs
+index 346b625..64dd645 100644
+--- a/niri-config/src/animations.rs
++++ b/niri-config/src/animations.rs
+@@ -12,6 +12,7 @@ pub struct Animations {
+     pub window_open: WindowOpenAnim,
+     pub window_close: WindowCloseAnim,
+     pub horizontal_view_movement: HorizontalViewMovementAnim,
++    pub column_edge_bounce: ColumnEdgeBounceAnim,
+     pub window_movement: WindowMovementAnim,
+     pub window_resize: WindowResizeAnim,
+     pub config_notification_open_close: ConfigNotificationOpenCloseAnim,
+@@ -28,6 +29,7 @@ impl Default for Animations {
+             slowdown: 1.,
+             workspace_switch: Default::default(),
+             horizontal_view_movement: Default::default(),
++            column_edge_bounce: Default::default(),
+             window_movement: Default::default(),
+             window_open: Default::default(),
+             window_close: Default::default(),
+@@ -58,6 +60,8 @@ pub struct AnimationsPart {
+     #[knuffel(child)]
+     pub horizontal_view_movement: Option<HorizontalViewMovementAnim>,
+     #[knuffel(child)]
++    pub column_edge_bounce: Option<ColumnEdgeBounceAnim>,
++    #[knuffel(child)]
+     pub window_movement: Option<WindowMovementAnim>,
+     #[knuffel(child)]
+     pub window_resize: Option<WindowResizeAnim>,
+@@ -90,6 +94,7 @@ impl MergeWith<AnimationsPart> for Animations {
+             window_open,
+             window_close,
+             horizontal_view_movement,
++            column_edge_bounce,
+             window_movement,
+             window_resize,
+             config_notification_open_close,
+@@ -310,6 +315,22 @@ impl Default for OverviewOpenCloseAnim {
+     }
+ }
+ 
++#[derive(Debug, Clone, Copy, PartialEq)]
++pub struct ColumnEdgeBounceAnim(pub Animation);
++
++impl Default for ColumnEdgeBounceAnim {
++    fn default() -> Self {
++        Self(Animation {
++            off: false,
++            kind: Kind::Spring(SpringParams {
++                damping_ratio: 1.,
++                stiffness: 800,
++                epsilon: 0.0001,
++            }),
++        })
++    }
++}
++
+ #[derive(Debug, Clone, Copy, PartialEq)]
+ pub struct RecentWindowsCloseAnim(pub Animation);
+ 
+@@ -509,6 +530,21 @@ where
+     }
+ }
+ 
++impl<S> knuffel::Decode<S> for ColumnEdgeBounceAnim
++where
++    S: knuffel::traits::ErrorSpan,
++{
++    fn decode_node(
++        node: &knuffel::ast::SpannedNode<S>,
++        ctx: &mut knuffel::decode::Context<S>,
++    ) -> Result<Self, DecodeError<S>> {
++        let default = Self::default().0;
++        Ok(Self(Animation::decode_node(node, ctx, default, |_, _| {
++            Ok(false)
++        })?))
++    }
++}
++
+ impl<S> knuffel::Decode<S> for RecentWindowsCloseAnim
+ where
+     S: knuffel::traits::ErrorSpan,
+diff --git a/niri-config/src/lib.rs b/niri-config/src/lib.rs
+index 329b766..7edc2b7 100644
+--- a/niri-config/src/lib.rs
++++ b/niri-config/src/lib.rs
+@@ -1551,6 +1551,18 @@ mod tests {
+                         ),
+                     },
+                 ),
++                column_edge_bounce: ColumnEdgeBounceAnim(
++                    Animation {
++                        off: false,
++                        kind: Spring(
++                            SpringParams {
++                                damping_ratio: 1.0,
++                                stiffness: 800,
++                                epsilon: 0.0001,
++                            },
++                        ),
++                    },
++                ),
+                 window_movement: WindowMovementAnim(
+                     Animation {
+                         off: false,
+diff --git a/src/input/mod.rs b/src/input/mod.rs
+index f1ad493..141f089 100644
+--- a/src/input/mod.rs
++++ b/src/input/mod.rs
+@@ -584,7 +584,10 @@ impl State {
+             .niri
+             .event_loop
+             .insert_source(repeat_timer, move |_, _, state| {
++                // Bounce off a column edge only once while the key is held.
++                state.niri.layout.set_suppress_edge_bounce(true);
+                 state.handle_bind(bind.clone());
++                state.niri.layout.set_suppress_edge_bounce(false);
+                 TimeoutAction::ToDuration(repeat_duration)
+             })
+             .unwrap();
+@@ -1047,11 +1050,14 @@ impl State {
+             Action::FocusColumnLeftUnderMouse => {
+                 if let Some((output, ws)) = self.niri.workspace_under_cursor(true) {
+                     let ws_id = ws.id();
++                    let suppress_bounce = self.niri.layout.is_edge_bounce_suppressed();
+                     let ws = {
+                         let mut workspaces = self.niri.layout.workspaces_mut();
+                         workspaces.find(|ws| ws.id() == ws_id).unwrap()
+                     };
+-                    ws.focus_left();
++                    if !ws.focus_left() && !suppress_bounce {
++                        ws.bounce_off_edge(ScrollDirection::Left);
++                    }
+                     self.maybe_warp_cursor_to_focus();
+                     self.niri.layer_shell_on_demand_focus = None;
+                     self.niri.queue_redraw(&output);
+@@ -1067,11 +1073,14 @@ impl State {
+             Action::FocusColumnRightUnderMouse => {
+                 if let Some((output, ws)) = self.niri.workspace_under_cursor(true) {
+                     let ws_id = ws.id();
++                    let suppress_bounce = self.niri.layout.is_edge_bounce_suppressed();
+                     let ws = {
+                         let mut workspaces = self.niri.layout.workspaces_mut();
+                         workspaces.find(|ws| ws.id() == ws_id).unwrap()
+                     };
+-                    ws.focus_right();
++                    if !ws.focus_right() && !suppress_bounce {
++                        ws.bounce_off_edge(ScrollDirection::Right);
++                    }
+                     self.maybe_warp_cursor_to_focus();
+                     self.niri.layer_shell_on_demand_focus = None;
+                     self.niri.queue_redraw(&output);
+diff --git a/src/layout/mod.rs b/src/layout/mod.rs
+index 5c4dd63..45e9f8f 100644
+--- a/src/layout/mod.rs
++++ b/src/layout/mod.rs
+@@ -364,6 +364,10 @@ pub struct Layout<W: LayoutElement> {
+     overview_open: bool,
+     /// The overview zoom progress.
+     overview_progress: Option<OverviewProgress>,
++    /// Whether column edge bounces are suppressed.
++    ///
++    /// Set while handling key repeats, so that holding the key bounces only once.
++    suppress_edge_bounce: bool,
+     /// Configurable properties of the layout.
+     options: Rc<Options>,
+ }
+@@ -703,6 +707,7 @@ impl<W: LayoutElement> Layout<W> {
+             update_render_elements_time: Duration::ZERO,
+             overview_open: false,
+             overview_progress: None,
++            suppress_edge_bounce: false,
+             options: Rc::new(options),
+         }
+     }
+@@ -728,6 +733,7 @@ impl<W: LayoutElement> Layout<W> {
+             update_render_elements_time: Duration::ZERO,
+             overview_open: false,
+             overview_progress: None,
++            suppress_edge_bounce: false,
+             options: opts,
+         }
+     }
+@@ -1789,17 +1795,23 @@ impl<W: LayoutElement> Layout<W> {
+     }
+ 
+     pub fn move_left(&mut self) {
++        let suppress_bounce = self.suppress_edge_bounce;
+         let Some(workspace) = self.active_workspace_mut() else {
+             return;
+         };
+-        workspace.move_left();
++        if !workspace.move_left() && !suppress_bounce {
++            workspace.bounce_off_edge(ScrollDirection::Left);
++        }
+     }
+ 
+     pub fn move_right(&mut self) {
++        let suppress_bounce = self.suppress_edge_bounce;
+         let Some(workspace) = self.active_workspace_mut() else {
+             return;
+         };
+-        workspace.move_right();
++        if !workspace.move_right() && !suppress_bounce {
++            workspace.bounce_off_edge(ScrollDirection::Right);
++        }
+     }
+ 
+     pub fn move_column_to_first(&mut self) {
+@@ -1920,17 +1932,31 @@ impl<W: LayoutElement> Layout<W> {
+     }
+ 
+     pub fn focus_left(&mut self) {
++        let suppress_bounce = self.suppress_edge_bounce;
+         let Some(workspace) = self.active_workspace_mut() else {
+             return;
+         };
+-        workspace.focus_left();
++        if !workspace.focus_left() && !suppress_bounce {
++            workspace.bounce_off_edge(ScrollDirection::Left);
++        }
+     }
+ 
+     pub fn focus_right(&mut self) {
++        let suppress_bounce = self.suppress_edge_bounce;
+         let Some(workspace) = self.active_workspace_mut() else {
+             return;
+         };
+-        workspace.focus_right();
++        if !workspace.focus_right() && !suppress_bounce {
++            workspace.bounce_off_edge(ScrollDirection::Right);
++        }
++    }
++
++    pub fn is_edge_bounce_suppressed(&self) -> bool {
++        self.suppress_edge_bounce
++    }
++
++    pub fn set_suppress_edge_bounce(&mut self, suppress: bool) {
++        self.suppress_edge_bounce = suppress;
+     }
+ 
+     pub fn focus_column_first(&mut self) {
+diff --git a/src/layout/scrolling.rs b/src/layout/scrolling.rs
+index 007bcaf..12927fd 100644
+--- a/src/layout/scrolling.rs
++++ b/src/layout/scrolling.rs
+@@ -16,7 +16,7 @@ use super::tab_indicator::{TabIndicator, TabIndicatorRenderElement, TabInfo};
+ use super::tile::{Tile, TileRenderElement, TileRenderSnapshot};
+ use super::workspace::{InteractiveResize, ResolvedSize};
+ use super::{ConfigureIntent, HitType, InteractiveResizeData, LayoutElement, Options, RemovedTile};
+-use crate::animation::{Animation, Clock};
++use crate::animation::{Animation, Clock, Curve};
+ use crate::input::swipe_tracker::SwipeTracker;
+ use crate::layout::SizingMode;
+ use crate::niri_render_elements;
+@@ -30,6 +30,12 @@ use crate::window::ResolvedWindowRules;
+ /// Amount of touchpad movement to scroll the view for the width of one working area.
+ const VIEW_GESTURE_WORKING_AREA_MOVEMENT: f64 = 1200.;
+ 
++/// How far focusing or moving past the first or last column stretches the view.
++const EDGE_BOUNCE_STRETCH: f64 = 48.;
++
++/// How long the view takes to stretch past the first or last column.
++const EDGE_BOUNCE_STRETCH_DURATION_MS: u64 = 100;
++
+ /// A scrollable-tiling space for windows.
+ #[derive(Debug)]
+ pub struct ScrollingSpace<W: LayoutElement> {
+@@ -67,6 +73,12 @@ pub struct ScrollingSpace<W: LayoutElement> {
+     /// View offset to restore after unfullscreening or unmaximizing.
+     view_offset_to_restore: Option<f64>,
+ 
++    /// Ongoing bounce off the first or last column.
++    ///
++    /// This is a purely visual offset on top of the view position. It doesn't change the view
++    /// offset, so it doesn't interfere with view animations and gestures.
++    edge_bounce: Option<EdgeBounce>,
++
+     /// Windows in the closing animation.
+     closing_windows: Vec<ClosingWindow>,
+ 
+@@ -276,6 +288,16 @@ pub enum ScrollDirection {
+     Right,
+ }
+ 
++#[derive(Debug)]
++struct EdgeBounce {
++    /// Direction of the edge that the view is stretched towards.
++    direction: ScrollDirection,
++    /// How far the view is stretched.
++    anim: Animation,
++    /// Whether the view is bouncing back.
++    returning: bool,
++}
++
+ #[derive(Debug)]
+ struct MoveAnimation {
+     anim: Animation,
+@@ -300,6 +322,7 @@ impl<W: LayoutElement> ScrollingSpace<W> {
+             view_offset: ViewOffset::Static(0.),
+             activate_prev_column_on_removal: None,
+             view_offset_to_restore: None,
++            edge_bounce: None,
+             closing_windows: Vec::new(),
+             view_size,
+             working_area,
+@@ -374,6 +397,19 @@ impl<W: LayoutElement> ScrollingSpace<W> {
+             }
+         }
+ 
++        if let Some(bounce) = &mut self.edge_bounce {
++            if bounce.anim.is_done() {
++                if bounce.returning {
++                    self.edge_bounce = None;
++                } else {
++                    let config = self.options.animations.column_edge_bounce.0;
++                    let stretch = bounce.anim.to();
++                    bounce.anim = Animation::new(self.clock.clone(), stretch, 0., 0., config);
++                    bounce.returning = true;
++                }
++            }
++        }
++
+         for col in &mut self.columns {
+             col.advance_animations();
+         }
+@@ -386,12 +422,14 @@ impl<W: LayoutElement> ScrollingSpace<W> {
+ 
+     pub fn are_animations_ongoing(&self) -> bool {
+         self.view_offset.is_animation_ongoing()
++            || self.edge_bounce.is_some()
+             || self.columns.iter().any(Column::are_animations_ongoing)
+             || !self.closing_windows.is_empty()
+     }
+ 
+     pub fn are_transitions_ongoing(&self) -> bool {
+         !self.view_offset.is_static()
++            || self.edge_bounce.is_some()
+             || self.columns.iter().any(Column::are_transitions_ongoing)
+             || !self.closing_windows.is_empty()
+     }
+@@ -1569,6 +1607,50 @@ impl<W: LayoutElement> ScrollingSpace<W> {
+         self.activate_column(0);
+     }
+ 
++    /// Stretches the view past the edge in the given direction, then bounces it back.
++    pub fn bounce_off_edge(&mut self, direction: ScrollDirection) {
++        if self.columns.is_empty() {
++            return;
++        }
++
++        if self.options.animations.column_edge_bounce.0.off
++            || self.clock.should_complete_instantly()
++        {
++            return;
++        }
++
++        // Continue from the current stretch towards the same edge.
++        let stretch = match &self.edge_bounce {
++            Some(bounce) if bounce.direction == direction => bounce.anim.value(),
++            _ => 0.,
++        };
++
++        let anim = Animation::ease(
++            self.clock.clone(),
++            stretch,
++            EDGE_BOUNCE_STRETCH,
++            0.,
++            EDGE_BOUNCE_STRETCH_DURATION_MS,
++            Curve::EaseOutCubic,
++        );
++        self.edge_bounce = Some(EdgeBounce {
++            direction,
++            anim,
++            returning: false,
++        });
++    }
++
++    fn edge_bounce_offset(&self) -> f64 {
++        let Some(bounce) = &self.edge_bounce else {
++            return 0.;
++        };
++        let stretch = bounce.anim.value();
++        match bounce.direction {
++            ScrollDirection::Left => -stretch,
++            ScrollDirection::Right => stretch,
++        }
++    }
++
+     pub fn focus_column_last(&mut self) {
+         if self.columns.is_empty() {
+             return;
+@@ -2292,7 +2374,9 @@ impl<W: LayoutElement> ScrollingSpace<W> {
+     }
+ 
+     pub fn view_pos(&self) -> f64 {
+-        self.column_x(self.active_column_idx) + self.view_offset.current()
++        self.column_x(self.active_column_idx)
++            + self.view_offset.current()
++            + self.edge_bounce_offset()
+     }
+ 
+     pub fn target_view_pos(&self) -> f64 {
+diff --git a/src/layout/tests/animations.rs b/src/layout/tests/animations.rs
+index 85df548..66a0920 100644
+--- a/src/layout/tests/animations.rs
++++ b/src/layout/tests/animations.rs
+@@ -1097,3 +1097,129 @@ fn width_resize_and_cancel_of_column_to_the_left() {
+     200 × 200 at x:100 y:  0
+     ");
+ }
++
++fn make_edge_bounce_layout(off: bool) -> Layout<TestWindow> {
++    let mut options = make_options();
++    options.animations.column_edge_bounce.0.kind = Kind::Easing(EasingParams {
++        duration_ms: 1000,
++        curve: Curve::Linear,
++    });
++    options.animations.column_edge_bounce.0.off = off;
++
++    let ops = [
++        Op::AddOutput(1),
++        Op::AddWindow {
++            params: TestWindowParams::new(1),
++        },
++        Op::AddWindow {
++            params: TestWindowParams::new(2),
++        },
++        Op::CompleteAnimations,
++    ];
++
++    check_ops_with_options(options, ops)
++}
++
++fn view_pos(layout: &Layout<TestWindow>) -> f64 {
++    layout.active_workspace().unwrap().scrolling().view_pos()
++}
++
++fn active_column_idx(layout: &Layout<TestWindow>) -> usize {
++    let ws = layout.active_workspace().unwrap();
++    ws.scrolling().active_column_idx()
++}
++
++#[track_caller]
++fn assert_stretch(layout: &Layout<TestWindow>, start: f64, stretch: f64) {
++    let actual = view_pos(layout) - start;
++    assert!(
++        (actual - stretch).abs() < 0.01,
++        "expected stretch {stretch}, got {actual}"
++    );
++}
++
++#[test]
++fn focus_past_last_column_bounces() {
++    let mut layout = make_edge_bounce_layout(false);
++    let start = view_pos(&layout);
++    let col = active_column_idx(&layout);
++
++    check_ops_on_layout(&mut layout, [Op::FocusColumnRight]);
++    assert_eq!(active_column_idx(&layout), col);
++
++    // Stretches out with an ease-out cubic over 100 ms.
++    check_ops_on_layout(&mut layout, [Op::AdvanceAnimations { msec_delta: 50 }]);
++    assert_stretch(&layout, start, 48. * (1. - 0.5f64.powi(3)));
++    check_ops_on_layout(&mut layout, [Op::AdvanceAnimations { msec_delta: 50 }]);
++    assert_stretch(&layout, start, 48.);
++
++    // Then bounces back with column-edge-bounce.
++    check_ops_on_layout(&mut layout, [Op::AdvanceAnimations { msec_delta: 500 }]);
++    assert_stretch(&layout, start, 24.);
++    check_ops_on_layout(&mut layout, [Op::AdvanceAnimations { msec_delta: 500 }]);
++    assert_eq!(view_pos(&layout), start);
++    assert!(!layout.are_animations_ongoing(None));
++}
++
++#[test]
++fn focus_past_first_column_bounces() {
++    let mut layout = make_edge_bounce_layout(false);
++    check_ops_on_layout(&mut layout, [Op::FocusColumnLeft, Op::CompleteAnimations]);
++    let start = view_pos(&layout);
++
++    check_ops_on_layout(&mut layout, [Op::FocusColumnLeft]);
++    assert_eq!(active_column_idx(&layout), 0);
++
++    check_ops_on_layout(&mut layout, [Op::AdvanceAnimations { msec_delta: 100 }]);
++    assert_stretch(&layout, start, -48.);
++    check_ops_on_layout(&mut layout, [Op::AdvanceAnimations { msec_delta: 1000 }]);
++    assert_eq!(view_pos(&layout), start);
++}
++
++#[test]
++fn move_past_last_column_bounces() {
++    let mut layout = make_edge_bounce_layout(false);
++    let start = view_pos(&layout);
++
++    check_ops_on_layout(
++        &mut layout,
++        [
++            Op::MoveColumnRight,
++            Op::AdvanceAnimations { msec_delta: 100 },
++        ],
++    );
++    assert_stretch(&layout, start, 48.);
++}
++
++#[test]
++fn suppressed_edge_bounce_does_nothing() {
++    let mut layout = make_edge_bounce_layout(false);
++    let start = view_pos(&layout);
++
++    layout.set_suppress_edge_bounce(true);
++    check_ops_on_layout(
++        &mut layout,
++        [
++            Op::FocusColumnRight,
++            Op::AdvanceAnimations { msec_delta: 50 },
++        ],
++    );
++    layout.set_suppress_edge_bounce(false);
++    assert_eq!(view_pos(&layout), start);
++    assert!(!layout.are_animations_ongoing(None));
++}
++
++#[test]
++fn edge_bounce_off_does_nothing() {
++    let mut layout = make_edge_bounce_layout(true);
++    let start = view_pos(&layout);
++
++    check_ops_on_layout(
++        &mut layout,
++        [
++            Op::FocusColumnRight,
++            Op::AdvanceAnimations { msec_delta: 50 },
++        ],
++    );
++    assert_eq!(view_pos(&layout), start);
++}
+diff --git a/src/layout/workspace.rs b/src/layout/workspace.rs
+index 49548a8..ef70903 100644
+--- a/src/layout/workspace.rs
++++ b/src/layout/workspace.rs
+@@ -937,6 +937,12 @@ impl<W: LayoutElement> Workspace<W> {
+         }
+     }
+ 
++    pub fn bounce_off_edge(&mut self, direction: ScrollDirection) {
++        if !self.floating_is_active.get() {
++            self.scrolling.bounce_off_edge(direction);
++        }
++    }
++
+     pub fn focus_column_right_or_first(&mut self) {
+         if !self.focus_right() {
+             self.focus_column_first();
