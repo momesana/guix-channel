@@ -14,7 +14,7 @@
   #:use-module (ice-9 match)
   #:export (telegram-desktop))
 
-(define %telegram-version "7.3.3")
+(define %telegram-version "7.4.5")
 
 (define* (telegram-origin name url commit hash #:key (patches '()))
   (origin
@@ -40,8 +40,8 @@
   `(("cmake"
      ,(telegram-origin
        "cmake-helpers" "https://github.com/desktop-app/cmake_helpers.git"
-       "7ceca3019b4750d7a5acb2de0faffd523ee14095"
-       "127k1h3j9279i8a9jyp5alr9kr0pswjfhr0j5kaxvbwk2c0wlfyw"
+       "8080200d61af9b2e4f72e80fca0a5176b2dd8049"
+       "1sisvs899b1ys8vqx2qcwa5v3hd06rnfgshm52lz06c602ddrvic"
        #:patches (search-patches "telegram-desktop-unbundle-cppgir.patch")))
     ("Telegram/codegen"
      ,(telegram-origin
@@ -51,8 +51,8 @@
     ("Telegram/lib_base"
      ,(telegram-origin
        "lib-base" "https://github.com/desktop-app/lib_base.git"
-       "95a543e426e35938dd632139d0bb828b268c3b4c"
-       "12d4vf3imr6v0a1n8c2gj5kdl812k5x984dbddqz93nw9hc8kl26"))
+       "f224f12040eea81c06b83c9aa651e80b14b4dc3a"
+       "10y0cq02mq3s0qnz12hdxwsgk9icdzjyx73hb0mxrzn9qxp0p83s"))
     ("Telegram/lib_crl"
      ,(telegram-origin
        "lib-crl" "https://github.com/desktop-app/lib_crl.git"
@@ -61,8 +61,8 @@
     ("Telegram/lib_lottie"
      ,(telegram-origin
        "lib-lottie" "https://github.com/desktop-app/lib_lottie.git"
-       "fbb922c30b7c30ba17ad5fd4fcb989eadd620062"
-       "0cx98kv22iqplb8b8xhwq1lna4hjqjgizcp8s02zl0ap5wrv577c"))
+       "4b1e7c89e79aaae3ffd010acbf93d40cb38b067f"
+       "1ivpv1m2i1qfhdm94nr45iw9qms0bngv9s62am7vq3r66cp78w9g"))
     ("Telegram/lib_qr"
      ,(telegram-origin
        "lib-qr" "https://github.com/desktop-app/lib_qr.git"
@@ -71,18 +71,18 @@
     ("Telegram/lib_rpl"
      ,(telegram-origin
        "lib-rpl" "https://github.com/desktop-app/lib_rpl.git"
-       "c57cccffb01d85570decd7fccb88419c9a682e63"
-       "0s9sza56fsrcd366ii6isc3w27ii2n9k48drn2q4vrq4jy1hy9ln"))
+       "11b92f816e99bbe085641a61a6db917e49bdd22c"
+       "1gissxgbahykdcqcjqmsvxpjl0jxpyfkdq1i7v3pkzqa0h2r0sgk"))
     ("Telegram/lib_spellcheck"
      ,(telegram-origin
        "lib-spellcheck" "https://github.com/desktop-app/lib_spellcheck.git"
-       "3273fd25c185fb626a9836dafbd644c2bd129ee1"
-       "10xbyl4hs4zbifmvf5xnafr9nrdg6rl866m76c0f855xpr1gs0vy"))
+       "05f135f23546fc0ffa9453e39782463a3607c2b2"
+       "177adk4h4rwqlz4j978plln2mfrw10m7d7pjxx2dbmgmxf3rg4p4"))
     ("Telegram/lib_storage"
      ,(telegram-origin
        "lib-storage" "https://github.com/desktop-app/lib_storage.git"
-       "ccdc72548a5065b5991b4e06e610d76bc4f6023e"
-       "0b11ix95dzpkz335q0a6b5yg8qhj33s4fgj9ppl37pszcqq1j3wi"))
+       "2711d80b90b662434be744017313ef3b9377f8b2"
+       "0wj3iciirwzxarlx9ywdyriknndxj4744w70wv8n8dlaga5jyl9d"))
     ("Telegram/lib_tl"
      ,(telegram-origin
        "lib-tl" "https://github.com/desktop-app/lib_tl.git"
@@ -97,19 +97,19 @@
     ("Telegram/lib_ui"
      ,(telegram-origin
        "lib-ui" "https://github.com/desktop-app/lib_ui.git"
-       "2f29133506e174a9d4a7b78740c3f1b04c2b993c"
-       "0h33qdz2m11z3gmm0nafyca7b5vms4rnprbjkrv73bf3hh66q3vi"
+       "562381f7537c60a2bec7b0fea37bdb14392bfbf3"
+       "1pzpm0r9npf9c8xdgvxg0dqr8lb0j5q0iv0pwg7p1i1n3qqy5a1q"
        #:patches (list (local-file "lib-ui-qt-6.9-compat.patch"))))
     ("Telegram/lib_webrtc"
      ,(telegram-origin
        "lib-webrtc" "https://github.com/desktop-app/lib_webrtc.git"
-       "52636e86eaa493de670daf71959d000b281bd153"
-       "1y50q6b33r506qn4pw0sn6cmxhwjcxdb79qrw7laz45l1iw1zhm0"))
+       "a22c87ddb80ebf6235b3c139448be6f364908a20"
+       "18iighwjwdv6aqbp7gii07ij3valhngrdp5yzxl2s2g4na5163dw"))
     ("Telegram/lib_webview"
      ,(telegram-origin
        "lib-webview" "https://github.com/desktop-app/lib_webview.git"
-       "ef03bbfd696c7527d7cb57ac20c3a5d30feb98fa"
-       "1n3lacw0jvn1i0dkciagqicma5whpr38k2q20f011bz11bylj56j"))
+       "a87346831e459e850f3cdaedf93bbb636e2b032f"
+       "1izx23wx0d67n7v6rl1jdybjzcxzk54wf3lvl4k4vklrxamb9xmh"))
     ("Telegram/ThirdParty/cld3"
      ,(telegram-origin
        "cld3" "https://github.com/google/cld3.git"
@@ -123,8 +123,8 @@
     ("Telegram/ThirdParty/libprisma"
      ,(telegram-origin
        "libprisma" "https://github.com/desktop-app/libprisma"
-       "75f26c17308871bee69f69a2831a8af2bc2f3627"
-       "1bbnvrc2yvq8g4km0bdy6q6bysqp2y7hlp41m67flijkhgvwx4p2"))
+       "94640c63c20eacdf70e37e23198d9ab53c802ebd"
+       "0vjrrh43c8wa38bal283vdyik36b12sjwb3bqcrby3gv2rirf9hp"))
     ("Telegram/ThirdParty/MicroTeX"
      ,(telegram-origin
        "microtex" "https://github.com/desktop-app/MicroTeX.git"
@@ -133,13 +133,29 @@
     ("Telegram/ThirdParty/tgcalls"
      ,(telegram-origin
        "tgcalls" "https://github.com/TelegramMessenger/tgcalls.git"
-       "1c236c09f8d8569fead14bd68000618a52051225"
-       "194r0qnpwlqkm31iw61lpcfji2cmc2kfqjjakzzi3habjzzaagg8"))
+       "f0bffbb7ba91a4b95136f9bd9354d3eae9226b7a"
+       "1y697ygwj14v6j1v6ax00yxvh458k8s7wxyp8b27q0wqwrsq0vk5"))
     ("Telegram/ThirdParty/TooManyCooks"
      ,(telegram-origin
        "toomanycooks" "https://github.com/tzcnt/TooManyCooks.git"
        "b86af81982860c96295a7e95e4c60cb335615cef"
        "1lpmddx0plhl2g3h86lbv184iaf38gsyjkd1bczv7q9xq4fclppr"))
+    ("Telegram/ThirdParty/twidget"
+     ,(telegram-origin
+       "twidget" "https://github.com/TelegramMessenger/twidget.git"
+       "65b031a4f60c1465cbd56a62b7435bc0f57f9fcd"
+       "11jxr3bca1hxa6qml8zbwpclqw0dxgz3ckfsq6rqzmsqwwdsv965"))
+    ("Telegram/ThirdParty/widget-sandbox"
+     ,(telegram-origin
+       "widget-sandbox" "https://github.com/TelegramMessenger/widget-sandbox.git"
+       "a6cf612b9bab02308ad3b1d4eb13d15c17a137c9"
+       "0dm5cx3i05x5y691b65nizj4zzh41bxg03rcmirmz5skl8s6109c"))
+    ;; A submodule of widget-sandbox.
+    ("Telegram/ThirdParty/widget-sandbox/packages/ios/Sources/CQuickJS/quickjs"
+     ,(telegram-origin
+       "quickjs" "https://github.com/TelegramMessenger/quickjs.git"
+       "fbc91d85432b967d5ad112308e6c752f7b5a9417"
+       "17q72gk74kqhqm9srnw0676mq8iay74fjmsbbm7sirhp9ggg08zb"))
     ("Telegram/ThirdParty/zxcvbn"
      ,(telegram-origin
        "zxcvbn" "https://github.com/tsyrogit/zxcvbn-c.git"
@@ -199,12 +215,12 @@ UniFFI.  This copy is the one vendored by wallet-engine.")
                 (method url-fetch)
                 (uri (string-append
                       "https://raw.githubusercontent.com/desktop-app/patches/"
-                      "a895fef40eaa7d66481cff542c623b039b7ce494"
+                      "23d349a3ff09dbc1fa8127ce39ba9223de0edf21"
                       "/wallet-engine.patch"))
                 (file-name "wallet-engine-for-telegram-desktop.patch")
                 (sha256
                  (base32
-                  "08mqndv1aam407k00rid39xsbfhksr0gmv45d99d0hlsqf1bl2ml")))))))
+                  "1mjwirpmvphyzjw42yvmylyc9nkfidwi9bdvzznvyi3515wzr8k7")))))))
     (build-system cargo-build-system)
     (arguments
      (list
@@ -286,7 +302,7 @@ along with their C and C++ interfaces.")
              (commit (string-append "v" version))))
        (file-name (git-file-name "telegram-desktop" version))
        (sha256
-        (base32 "0k9fwvc4bd92a88bd8ica3lvkdf3x1g52q0vhdz3jfkymckxq0qi"))))
+        (base32 "1z14hig6vp941zl7cvz9zpdbln3x39iavry94js44wxnw6pw3wlv"))))
     (arguments
      (substitute-keyword-arguments
          (package-arguments upstream:telegram-desktop)

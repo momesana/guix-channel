@@ -53,7 +53,7 @@ checkout's top directory:
 | [solaar](#solaar) | 1.1.20 | GPL 2 | Linux devices manager for the Logitech Unifying Receiver | [pwr-solaar.github.io](https://pwr-solaar.github.io/Solaar/) |
 | [talhelper](#talos) | 3.1.17 | Modified BSD | Generate Talos Linux machine configurations | [budimanjojo.github.io](https://budimanjojo.github.io/talhelper/) |
 | [talosctl](#talos) | 1.14.5 | MPL 2.0 | Command-line tool for Talos Linux | [talos.dev](https://www.talos.dev) |
-| [telegram-desktop](#telegram) | 7.3.3 | LGPL 3, GPL 3+ | Telegram Desktop | [desktop.telegram.org](https://desktop.telegram.org/) |
+| [telegram-desktop](#telegram) | 7.4.5 | LGPL 3, GPL 3+ | Telegram Desktop | [desktop.telegram.org](https://desktop.telegram.org/) |
 <!-- package table: end -->
 
 Libraries are left out; `etc/update-readme` regenerates the table, and
