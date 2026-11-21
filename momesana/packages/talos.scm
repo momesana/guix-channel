@@ -11,7 +11,7 @@
 (define-public talosctl
   (package
     (name "talosctl")
-    (version "1.14.5")
+    (version "1.14.6")
     (source
      (origin
        (method url-fetch)
@@ -19,7 +19,7 @@
                            version "/talosctl-linux-amd64"))
        (file-name name)
        (sha256
-        (base32 "0zbx9mqrsgkq5rnwvp5hjr8js8ylrsi0hfjnkjvfc2b7k1l2nhzz"))))
+        (base32 "11z9blv0nd9fk0ajd170gmcmy1lm8nrlk0zvwv5ykzvqfmzxxb0i"))))
     (build-system copy-build-system)
     (arguments
      (list #:install-plan ''(("talosctl" "bin/"))
