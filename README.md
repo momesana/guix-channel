@@ -44,7 +44,7 @@ checkout's top directory:
 | [dms](#dms) | 2.1.2 | Expat | Command-line backend for Dux Shell | [duxlabs-dev/dux-shell](https://github.com/duxlabs-dev/dux-shell) |
 | [dux-files](#dms) | 2.1.2 | Expat | File manager for the Dux desktop | [duxlabs-dev/dux-files](https://github.com/duxlabs-dev/dux-files) |
 | [element-desktop](#messaging) | 1.12.35 | ASL 2.0 | Matrix collaboration client for desktop | [element.io](https://element.io/) |
-| [fluxcd](#fluxcd) | 2.10.0 | ASL 2.0 | Command-line tool for Flux, the GitOps toolkit for Kubernetes | [fluxcd.io](https://fluxcd.io) |
+| [fluxcd](#fluxcd) | 2.10.1 | ASL 2.0 | Command-line tool for Flux, the GitOps toolkit for Kubernetes | [fluxcd.io](https://fluxcd.io) |
 | [k9s](#kubernetes) | 0.51.0 | ASL 2.0 | Terminal user interface for Kubernetes clusters | [k9scli.io](https://k9scli.io) |
 | [kubectl](#kubernetes) | 1.36.6 | ASL 2.0 | Command-line tool for Kubernetes | [kubernetes.io](https://kubernetes.io) |
 | [kubernetes-helm](#kubernetes) | 4.3.2 | ASL 2.0 | Package manager for Kubernetes | [helm.sh](https://helm.sh) |

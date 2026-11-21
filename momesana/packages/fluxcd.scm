@@ -10,14 +10,14 @@
 (define-public fluxcd
   (package
     (name "fluxcd")
-    (version "2.10.0")
+    (version "2.10.1")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://github.com/fluxcd/flux2/releases/download/v"
                            version "/flux_" version "_linux_amd64.tar.gz"))
        (sha256
-        (base32 "0nc6kyy9ih452s0jf59q9b1v259vvxinw2rdbgnxxzh45h0xg390"))))
+        (base32 "11cjxbf9mqx5wdcqghc3vmi9zh7h7rqk7zr7323rgg5ahkznawwn"))))
     (build-system copy-build-system)
     (arguments
      (list #:install-plan ''(("flux" "bin/"))))
