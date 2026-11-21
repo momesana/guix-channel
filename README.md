@@ -49,7 +49,6 @@ checkout's top directory:
 | [kubectl](#kubernetes) | 1.36.6 | ASL 2.0 | Command-line tool for Kubernetes | [kubernetes.io](https://kubernetes.io) |
 | [kubernetes-helm](#kubernetes) | 4.3.1 | ASL 2.0 | Package manager for Kubernetes | [helm.sh](https://helm.sh) |
 | [quickshell-host](#host) | 0.3.2 | LGPL 3 | QtQuick-based desktop shell toolkit | [quickshell.outfoxxed.me](https://quickshell.outfoxxed.me) |
-| [resvg](#resvg) | 0.49.0 | ASL 2.0, Expat | SVG rendering tool | [linebender/resvg](https://github.com/linebender/resvg) |
 | [signal-desktop](#messaging) | 8.35.0 | AGPL 3 | Private messenger using the Signal protocol | [signal.org](https://signal.org/) |
 | [solaar](#solaar) | 1.1.20 | GPL 2 | Linux devices manager for the Logitech Unifying Receiver | [pwr-solaar.github.io](https://pwr-solaar.github.io/Solaar/) |
 | [talhelper](#talos) | 3.1.17 | Modified BSD | Generate Talos Linux machine configurations | [budimanjojo.github.io](https://budimanjojo.github.io/talhelper/) |
@@ -136,11 +135,6 @@ generates a Talos cluster's machine configurations.
 Like the kubernetes and talos packages, it installs the statically linked
 upstream release binary, which runs unmodified on Guix System; building
 from source would mean packaging several hundred Go modules.
-
-## [resvg](momesana/packages/resvg.scm)
-
-`resvg`, the SVG renderer's command-line tool (yazi uses it for SVG
-previews). Guix ships resvg's crate source, but no package for the tool.
 
 ## [solaar](momesana/packages/solaar.scm)
 
