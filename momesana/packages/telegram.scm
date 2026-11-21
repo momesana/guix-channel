@@ -7,6 +7,7 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix download)
   #:use-module (gnu packages)
+  #:use-module (gnu packages kde-frameworks)
   #:use-module (gnu packages rust)
   #:use-module (gnu packages security-token)
   #:use-module ((gnu packages telegram) #:prefix upstream:)
@@ -263,6 +264,16 @@ the TON wallet core, into the single static library Telegram Desktop links,
 along with their C and C++ interfaces.")
     (license (list license:expat license:asl2.0))))
 
+;; LibRaw recognises some headerless camera files by their size alone,
+;; so kimageformats' RAW plugin claims any image of such a size and
+;; Telegram shows it as noise.  Telegram passes images without a file
+;; name, which makes Qt guess the format from the content.
+(define kimageformats-without-raw
+  (package
+    (inherit kimageformats)
+    (inputs (modify-inputs (package-inputs kimageformats)
+              (delete "libraw")))))
+
 (define telegram-desktop
   (package
     (inherit upstream:telegram-desktop)
@@ -295,4 +306,5 @@ along with their C and C++ interfaces.")
     (inputs
      (modify-inputs (package-inputs upstream:telegram-desktop)
        (delete "rlottie-for-telegram-desktop")
+       (replace "kimageformats" kimageformats-without-raw)
        (append libfido2 tdesktop-rust)))))

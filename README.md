@@ -105,6 +105,12 @@ are built as one static library, `tdesktop-rust`, like upstream's Linux
 build does. Their crate sources are in
 [rust-crates](momesana/packages/rust-crates.scm).
 
+It uses kimageformats without its RAW plugin. LibRaw recognises some
+headerless camera files by their size alone, so the plugin claimed
+ordinary images of such a size and Telegram showed them as noise. A
+kimageformats in a directory on an inherited `QT_PLUGIN_PATH` still
+brings the plugin back.
+
 ## [messaging](momesana/packages/messaging.scm)
 
 `signal-desktop` and `element-desktop`, newer than nonguix's. They inherit
