@@ -49,7 +49,7 @@ checkout's top directory:
 | [kubectl](#kubernetes) | 1.36.6 | ASL 2.0 | Command-line tool for Kubernetes | [kubernetes.io](https://kubernetes.io) |
 | [kubernetes-helm](#kubernetes) | 4.3.1 | ASL 2.0 | Package manager for Kubernetes | [helm.sh](https://helm.sh) |
 | [quickshell-host](#host) | 0.3.2 | LGPL 3 | QtQuick-based desktop shell toolkit | [quickshell.outfoxxed.me](https://quickshell.outfoxxed.me) |
-| [signal-desktop](#messaging) | 8.35.0 | AGPL 3 | Private messenger using the Signal protocol | [signal.org](https://signal.org/) |
+| [signal-desktop](#messaging) | 8.36.0 | AGPL 3 | Private messenger using the Signal protocol | [signal.org](https://signal.org/) |
 | [solaar](#solaar) | 1.1.20 | GPL 2 | Linux devices manager for the Logitech Unifying Receiver | [pwr-solaar.github.io](https://pwr-solaar.github.io/Solaar/) |
 | [talhelper](#talos) | 3.1.17 | Modified BSD | Generate Talos Linux machine configurations | [budimanjojo.github.io](https://budimanjojo.github.io/talhelper/) |
 | [talosctl](#talos) | 1.14.5 | MPL 2.0 | Command-line tool for Talos Linux | [talos.dev](https://www.talos.dev) |

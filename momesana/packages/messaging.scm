@@ -12,7 +12,7 @@
 (define-public signal-desktop
   (package
     (inherit nongnu:signal-desktop)
-    (version "8.35.0")
+    (version "8.36.0")
     (source
      (origin
        (method url-fetch)
@@ -20,7 +20,7 @@
                            "signal-desktop/signal-desktop_" version
                            "_amd64.deb"))
        (sha256
-        (base32 "1lxl6bwvsc9mbp7k97in226w7d82r45466794mdzjjac78vb0218"))))))
+        (base32 "052aka2vbf39xryd3xhsr6g58xqwzznas7wfqvxp09w7skh1yf25"))))))
 
 (define-public element-desktop
   (package
