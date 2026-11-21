@@ -38,7 +38,7 @@ checkout's top directory:
 | ------- | ------- | ------- | ----------- | -------- |
 | [amtterm](#amtterm) | 1.8 | GPL 2+ | Serial-over-LAN and IDE redirection client for Intel AMT | [kraxel/amtterm](https://github.com/kraxel/amtterm) |
 | [brave](#brave) | 1.100.58 | MPL 2.0 | Chromium-based web browser with built-in ad and tracker blocking | [brave.com](https://brave.com/) |
-| [cilium-cli](#kubernetes) | 0.20.2 | ASL 2.0 | Command-line tool for Cilium | [cilium/cilium-cli](https://github.com/cilium/cilium-cli) |
+| [cilium-cli](#kubernetes) | 0.20.3 | ASL 2.0 | Command-line tool for Cilium | [cilium/cilium-cli](https://github.com/cilium/cilium-cli) |
 | [dank-material-shell-qml](#dms) | 2.1.2 | Expat | Quickshell-based desktop shell for Wayland compositors | [duxlabs-dev/dux-shell](https://github.com/duxlabs-dev/dux-shell) |
 | [dank-material-shell-qml-host](#host) | 2.1.2 | Expat | Quickshell-based desktop shell for Wayland compositors | [duxlabs-dev/dux-shell](https://github.com/duxlabs-dev/dux-shell) |
 | [dms](#dms) | 2.1.2 | Expat | Command-line backend for Dux Shell | [duxlabs-dev/dux-shell](https://github.com/duxlabs-dev/dux-shell) |

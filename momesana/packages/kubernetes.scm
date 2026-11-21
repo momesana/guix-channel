@@ -92,7 +92,7 @@ statically linked binary published by the project.")
 (define-public cilium-cli
   (package
     (name "cilium-cli")
-    (version "0.20.2")
+    (version "0.20.3")
     (source
      (origin
        (method url-fetch)
@@ -100,7 +100,7 @@ statically linked binary published by the project.")
                            version "/cilium-linux-amd64.tar.gz"))
        (file-name (string-append name "-" version "-linux-amd64.tar.gz"))
        (sha256
-        (base32 "0mh8qdzvn4i0qiky0dm9fvgifl7wzrsd4rs5m3qq83pdpxi4l8mp"))))
+        (base32 "1my73rzd53dl7vpdzv0k8yv9f7hxsjyaffjmjvyd642k346sv1xr"))))
     (build-system copy-build-system)
     (arguments
      (list #:install-plan ''(("cilium" "bin/"))))
