@@ -21,9 +21,10 @@
 (define-public go-github-com-duxlabs-dev-dux-go
   (package
     (name "go-github-com-duxlabs-dev-dux-go")
-    ;; The commit dux-shell 2.0.0 pins; upstream's v2.0.0 tag is a later one,
-    ;; and the module path has no /v2, so Go knows it by this pseudo-version.
-    (version "1.6.3-0.20261020163124-e2ca52bdf500")
+    ;; The commit dux-files 2.1.2 pins.  dux-shell 2.1.2 pins 699311e, two
+    ;; commits earlier; only a trash fix and CI changes are in between.  The
+    ;; module path has no /v2, so Go knows it by this pseudo-version.
+    (version "1.6.3-0.20261106152240-dc9b388fdc6f")
     (source
      (origin
        (method git-fetch)
@@ -32,7 +33,7 @@
              (commit (go-version->git-ref version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0dml41ywifnn41df0l0403dqbad67848skl662s222lz84mdpry7"))
+        (base32 "165qlf5ws37l94lvwqcslnf5dnrp6pvsn9hk9zkzz9vbg3gkivq5"))
        ;; cmd/go-wayland-scanner, upstream's code generator for the Wayland
        ;; protocol bindings, needs a newer gofumpt; neither DMS nor its
        ;; libraries use it.
@@ -82,7 +83,10 @@
                  ;; the build environment does not have.
                  "TestExternalThumbnailerProducesCachedThumbnail"
                  "TestExternalThumbnailerFailureAndTimeoutLeaveMarker"
-                 "TestCommandSource")
+                 "TestUserThumbnailerOverridesNativeImageDecode"
+                 "TestCommandSource"
+                 "TestCommand"
+                 "TestCommandTimeoutKillsProcessGroup")
                 "|")
                ")$"))
       #:import-path "github.com/duxlabs-dev/dux-go"))
@@ -113,8 +117,8 @@ color generation and more.")
 (define-public go-github-com-duxlabs-dev-dux-gop
   (package
     (name "go-github-com-duxlabs-dev-dux-gop")
-    ;; See go-github-com-duxlabs-dev-dux-go for the version.
-    (version "1.6.3-0.20261020163819-0e4888f1fcea")
+    ;; The commit dux-shell 2.1.2 pins.
+    (version "1.6.3-0.20261104203851-b2331e7fc9b7")
     (source
      (origin
        (method git-fetch)
@@ -123,12 +127,15 @@ color generation and more.")
              (commit (go-version->git-ref version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0akcffva4s0c914rjn5ic1qzrdcqrxb08lb731glxscvhivv3zc1"))))
+        (base32 "174k3bnm5fix5738vqig6d66gw4m3rxpif8l0g4idb07rx5ig5a8"))))
     (build-system go-build-system)
     (arguments
      (list
       #:go go-1.27
       #:skip-build? #t
+      ;; It expects uid 0 to be "root", but the build environment's
+      ;; /etc/passwd does not list root.
+      #:test-flags #~(list "-skip" "^TestProcReader_Basics$")
       #:import-path "github.com/duxlabs-dev/dux-gop"))
     (propagated-inputs (list go-github-com-caarlos0-env-v11
                              go-github-com-charmbracelet-bubbles

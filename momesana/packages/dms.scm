@@ -18,7 +18,7 @@
   #:use-module (gnu packages window-management)
   #:use-module (momesana packages golang))
 
-(define %dms-version "2.0.0")
+(define %dms-version "2.1.2")
 
 (define %tailscale-stub "\
 package tailscale
@@ -62,7 +62,7 @@ func HandleRequest(conn *ipc.ConnWriter, req ipc.Request, manager *Manager) {
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1bsd6ydqm5mc1jygih69rpb4ir6jl0xf3ipmqq4pn6cfrip9s9c7"))
+        (base32 "0fh4hv1880pcwxbx6fh4cmpxwh76wwwq7shh5128xpv9vkmyrhqg"))
        (modules '((guix build utils)))
        ;; The Tailscale integration is the only user of the tailscale.com Go
        ;; module, which is not packaged in Guix.  Replace it with a stub that
@@ -98,6 +98,7 @@ func HandleRequest(conn *ipc.ConnWriter, req ipc.Request, manager *Manager) {
            go-github-com-go-git-go-git-v6
            go-github-com-godbus-dbus-v5
            go-github-com-holoplot-go-evdev
+           go-github-com-kevinburke-ssh-config
            go-github-com-klauspost-compress
            go-github-com-lucasb-eyer-go-colorful
            go-github-com-mattn-go-isatty
@@ -113,6 +114,7 @@ func HandleRequest(conn *ipc.ConnWriter, req ipc.Request, manager *Manager) {
            go-github-com-yeqown-go-qrcode-writer-standard
            go-github-com-yuin-goldmark
            go-go-etcd-io-bbolt
+           go-golang-org-x-crypto
            go-golang-org-x-image
            go-golang-org-x-sys
            go-golang-org-x-text
@@ -140,7 +142,7 @@ included.")
              (recursive? #t)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1fddn2psb7v12g4lkqd7sp58m60irjrsfwrm2m715i15njnz9djc"))))
+        (base32 "16hxg8i135w7f5k663jbay2sfpcwxihaj4axz8s2ywvylnym71gx"))))
     (build-system copy-build-system)
     (arguments
      ;; quickshell/DCommon is a symlink into the dux-qml-common submodule,
@@ -162,7 +164,7 @@ Hyprland and Sway.  Run it with @code{dms run -c
 (define-public dux-files
   (package
     (name "dux-files")
-    (version "2.0.0")
+    (version "2.1.2")
     (source
      (origin
        (method git-fetch)
@@ -172,7 +174,7 @@ Hyprland and Sway.  Run it with @code{dms run -c
              (recursive? #t)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1jjnanzlxnj1s51a7gn1rgj39b3wlmrp2r5ghwq8pw2pczbcfzj4"))))
+        (base32 "1pz57rnmfbg6pnyfkm8p4ry8xfrj6mgy8xs1l7yh63ma1gmwwp33"))))
     (build-system go-build-system)
     (arguments
      (list #:go go-1.27

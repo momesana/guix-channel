@@ -39,10 +39,10 @@ checkout's top directory:
 | [amtterm](#amtterm) | 1.8 | GPL 2+ | Serial-over-LAN and IDE redirection client for Intel AMT | [kraxel/amtterm](https://github.com/kraxel/amtterm) |
 | [brave](#brave) | 1.100.58 | MPL 2.0 | Chromium-based web browser with built-in ad and tracker blocking | [brave.com](https://brave.com/) |
 | [cilium-cli](#kubernetes) | 0.20.2 | ASL 2.0 | Command-line tool for Cilium | [cilium/cilium-cli](https://github.com/cilium/cilium-cli) |
-| [dank-material-shell-qml](#dms) | 2.0.0 | Expat | Quickshell-based desktop shell for Wayland compositors | [duxlabs-dev/dux-shell](https://github.com/duxlabs-dev/dux-shell) |
-| [dank-material-shell-qml-host](#host) | 2.0.0 | Expat | Quickshell-based desktop shell for Wayland compositors | [duxlabs-dev/dux-shell](https://github.com/duxlabs-dev/dux-shell) |
-| [dms](#dms) | 2.0.0 | Expat | Command-line backend for Dux Shell | [duxlabs-dev/dux-shell](https://github.com/duxlabs-dev/dux-shell) |
-| [dux-files](#dms) | 2.0.0 | Expat | File manager for the Dux desktop | [duxlabs-dev/dux-files](https://github.com/duxlabs-dev/dux-files) |
+| [dank-material-shell-qml](#dms) | 2.1.2 | Expat | Quickshell-based desktop shell for Wayland compositors | [duxlabs-dev/dux-shell](https://github.com/duxlabs-dev/dux-shell) |
+| [dank-material-shell-qml-host](#host) | 2.1.2 | Expat | Quickshell-based desktop shell for Wayland compositors | [duxlabs-dev/dux-shell](https://github.com/duxlabs-dev/dux-shell) |
+| [dms](#dms) | 2.1.2 | Expat | Command-line backend for Dux Shell | [duxlabs-dev/dux-shell](https://github.com/duxlabs-dev/dux-shell) |
+| [dux-files](#dms) | 2.1.2 | Expat | File manager for the Dux desktop | [duxlabs-dev/dux-files](https://github.com/duxlabs-dev/dux-files) |
 | [element-desktop](#messaging) | 1.12.35 | ASL 2.0 | Matrix collaboration client for desktop | [element.io](https://element.io/) |
 | [fluxcd](#fluxcd) | 2.10.0 | ASL 2.0 | Command-line tool for Flux, the GitOps toolkit for Kubernetes | [fluxcd.io](https://fluxcd.io) |
 | [k9s](#kubernetes) | 0.51.0 | ASL 2.0 | Terminal user interface for Kubernetes clusters | [k9scli.io](https://k9scli.io) |
