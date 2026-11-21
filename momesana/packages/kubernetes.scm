@@ -45,14 +45,14 @@ project.")
 (define-public kubernetes-helm
   (package
     (name "kubernetes-helm")
-    (version "4.3.1")
+    (version "4.3.2")
     (source
      (origin
        (method url-fetch)
        (uri (string-append "https://get.helm.sh/helm-v" version
                            "-linux-amd64.tar.gz"))
        (sha256
-        (base32 "0jz5gwszb4irkmmxldhpb2kzw8bp1187nim220dx24q9wa5ah0q4"))))
+        (base32 "10rrlpd0gz8khmhxwz2pisx48s90vjrzal3y5mc7kaxy8s6jgh6i"))))
     (build-system copy-build-system)
     (arguments
      (list #:install-plan ''(("helm" "bin/"))))

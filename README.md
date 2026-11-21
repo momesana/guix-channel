@@ -47,7 +47,7 @@ checkout's top directory:
 | [fluxcd](#fluxcd) | 2.10.0 | ASL 2.0 | Command-line tool for Flux, the GitOps toolkit for Kubernetes | [fluxcd.io](https://fluxcd.io) |
 | [k9s](#kubernetes) | 0.51.0 | ASL 2.0 | Terminal user interface for Kubernetes clusters | [k9scli.io](https://k9scli.io) |
 | [kubectl](#kubernetes) | 1.36.6 | ASL 2.0 | Command-line tool for Kubernetes | [kubernetes.io](https://kubernetes.io) |
-| [kubernetes-helm](#kubernetes) | 4.3.1 | ASL 2.0 | Package manager for Kubernetes | [helm.sh](https://helm.sh) |
+| [kubernetes-helm](#kubernetes) | 4.3.2 | ASL 2.0 | Package manager for Kubernetes | [helm.sh](https://helm.sh) |
 | [quickshell-host](#host) | 0.3.2 | LGPL 3 | QtQuick-based desktop shell toolkit | [quickshell.outfoxxed.me](https://quickshell.outfoxxed.me) |
 | [signal-desktop](#messaging) | 8.36.0 | AGPL 3 | Private messenger using the Signal protocol | [signal.org](https://signal.org/) |
 | [solaar](#solaar) | 1.1.20 | GPL 2 | Linux devices manager for the Logitech Unifying Receiver | [pwr-solaar.github.io](https://pwr-solaar.github.io/Solaar/) |
